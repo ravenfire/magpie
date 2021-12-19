@@ -12,6 +12,7 @@ use Ravenfire\Magpie\Application\ManageData\UninstallCommand;
 use Ravenfire\Magpie\Application\RunAllCommand;
 use Ravenfire\Magpie\Data\DataManager;
 use Ravenfire\Magpie\Sources\AbstractSource;
+use Symfony\Component\Console\Application;
 
 if (!defined('MAGPIE_ROOT')) {
     define('MAGPIE_ROOT', __DIR__ . '/../');
@@ -55,8 +56,6 @@ class Magpie
      */
     public function run()
     {
-//        $m = new CreateLogsTable();
-//        
 //        Capsule::statement("insert into flights ('name', 'airline') VALUES ('a', 'me')");
 //        
 //        $r = Capsule::table('flights')->insert([
@@ -78,7 +77,9 @@ class Magpie
 //            sleep(3);
 //        }
 
-        $application = new \Symfony\Component\Console\Application();
+//        $b = $this->getSource('data-example');
+//        die();
+        $application = new Application();
 
         // Run Sources Commands
         $application->add(new RunAllCommand($this));

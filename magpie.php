@@ -3,6 +3,7 @@
 use Monolog\Handler\HandlerInterface;
 use Monolog\Logger;
 use Ravenfire\Magpie\Config;
+use Ravenfire\Magpie\Examples\DataSource\DataExample;
 use Ravenfire\Magpie\Examples\SimpleSource\SimpleExample;
 use Ravenfire\Magpie\Magpie;
 
@@ -17,6 +18,7 @@ require 'vendor/autoload.php';
 $config = new Config(); // @todo: Config::from($json/yml/dotenv)
 
 // Create the logger
+// @todo: all of this can move into `run()` or `__construct()`
 $logger = new Logger('magpie');
 //$logger->pushHandler(new MagpieDataLogger());
 $logger->pushHandler(new class implements HandlerInterface {
@@ -49,6 +51,7 @@ $magpie->setLogger($logger);
 
 try {
     $magpie->addSource(SimpleExample::class);
+    $magpie->addSource(DataExample::class);
 } catch (Exception $exception) {
     die($exception->getMessage()); // @todo: Probably better handling
 }

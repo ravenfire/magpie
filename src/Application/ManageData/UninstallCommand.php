@@ -36,7 +36,7 @@ class UninstallCommand extends AbstractMagpieCommand
 
         if (!$input->getOption('confirm')) {
             $helper = $this->getHelper('question');
-            $question = new ConfirmationQuestion("Are you sure you want to uninstall {$key}", false);
+            $question = new ConfirmationQuestion("Are you sure you want to uninstall {$key}? ", false);
 
             if (!$helper->ask($input, $output, $question)) {
                 $output->writeln("Probably a good choice");
@@ -49,10 +49,10 @@ class UninstallCommand extends AbstractMagpieCommand
             $sources = $this->getContext()->getAllSources();
         } else {
             $source = $this->getContext()->getSource($key);
-            if ($sources) {
+            if ($source) {
                 $sources = [$source];
             } else {
-                throw new Exception("Could not find {$key} to install");
+                throw new Exception("Could not find {$key} to uninstall");
             }
         }
 
