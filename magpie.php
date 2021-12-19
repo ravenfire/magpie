@@ -3,8 +3,8 @@
 use Monolog\Handler\HandlerInterface;
 use Monolog\Logger;
 use Ravenfire\Magpie\Config;
+use Ravenfire\Magpie\Examples\SimpleSource\SimpleExample;
 use Ravenfire\Magpie\Magpie;
-use Ravenfire\Magpie\Sources\SimpleExample\SimpleExample;
 
 require 'vendor/autoload.php';
 

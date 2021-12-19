@@ -1,6 +1,6 @@
 <?php
 
-namespace Ravenfire\Magpie\Sources\SimpleExample;
+namespace Ravenfire\Magpie\Examples\SimpleSource;
 
 use Ravenfire\Magpie\Sources\AbstractSource;
 
