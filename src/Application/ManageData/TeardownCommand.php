@@ -51,9 +51,18 @@ class TeardownCommand extends AbstractMagpieCommand
             throw new Exception("Uninstalls failed");
         }
 
-        // Now, we remove The Magpie data
         $migrations = new MigrationManager($this->getContext());
 
+        // Next, we remove the primary entity
+        $primary_entity = $this->getContext()->getPrimaryEntity();
+        $migrations->down(
+            $primary_entity::getMigrations(),
+            function ($migration_class) use ($primary_entity) {
+                $this->getContext()->getLogger()->debug("Reversing Primary Entity Migrations: `{$primary_entity::getKey()}`");
+            }
+        );
+
+        // Now, we remove The Magpie data
         $this->getContext()->getLogger()->alert("Reversing Magpie Migrations");
         $migrations->downMagpie(function ($migration_class) {
             $this->getContext()->getLogger()->alert("Reversing Migration: `{$migration_class}`");

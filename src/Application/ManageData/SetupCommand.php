@@ -23,15 +23,24 @@ class SetupCommand extends AbstractMagpieCommand
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        // First we run the Magpie Migrations
         $migrations = new MigrationManager($this->getContext());
 
+        // First we run the Magpie Migrations
         $this->getContext()->getLogger()->debug("Running Magpie Migrations");
         $migrations->upMagpie(function ($migration_class) {
             $this->getContext()->getLogger()->debug("Running Migration: `{$migration_class}`");
         });
 
         $this->getContext()->getLogger()->debug("Finished With All Magpie Migrations");
+
+        // Second, we create the Primary Entity
+        $primary_entity = $this->getContext()->getPrimaryEntity();
+        $migrations->up(
+            $primary_entity::getMigrations(),
+            function ($migration_class) use ($primary_entity) {
+                $this->getContext()->getLogger()->debug("Running Primary Entity Migrations: `{$primary_entity::getKey()}`");
+            }
+        );
 
         // Now, we can install sources if we want
         $helper = $this->getHelper('question');

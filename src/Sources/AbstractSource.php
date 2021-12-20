@@ -23,9 +23,7 @@ abstract class AbstractSource implements LoggerInterface
     /** @var array */
     protected $default_logging_context = [];
 
-    /**
-     * @var bool
-     */
+    /** @var bool */
     protected $console_initialized = false;
 
     /**
@@ -53,6 +51,10 @@ abstract class AbstractSource implements LoggerInterface
         $this->execute();
     }
 
+    /**
+     * @param OutputInterface $output
+     * @return void
+     */
     protected function initConsole(OutputInterface $output)
     {
         if (!$this->isConsoleInitialized()) {
@@ -166,7 +168,7 @@ abstract class AbstractSource implements LoggerInterface
         return array_merge($this->getSourceLoggingContext(), $this->getDefaultLoggingContext());
     }
 
-    private function getSourceLoggingContext()
+    private function getSourceLoggingContext(): array
     {
         return [
             'source' => [

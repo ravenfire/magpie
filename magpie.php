@@ -4,16 +4,18 @@ use Monolog\Handler\HandlerInterface;
 use Monolog\Logger;
 use Ravenfire\Magpie\Config;
 use Ravenfire\Magpie\Examples\DataSource\DataExample;
+use Ravenfire\Magpie\Examples\PrimaryEntity\ExamplePrimaryEntity;
 use Ravenfire\Magpie\Examples\SimpleSource\SimpleExample;
 use Ravenfire\Magpie\Magpie;
 
 require 'vendor/autoload.php';
 
-// @todo: test a sources (data-example) install and uninstall
-// @todo: Man application needs to define the "primary entity" table (game)
+// @todo: Main application needs to define the "primary entity" table (game)
+// @todo: look at what needs to be static
 // @todo: Create eloquent models for primary entity and sources
 // @todo: clean up CLI commands
 // @todo: Config and Logging to correct places
+// @todo: WISH - add tags
 
 $config = new Config(); // @todo: Config::from($json/yml/dotenv)
 
@@ -47,7 +49,8 @@ $logger->pushHandler(new class implements HandlerInterface {
 });
 
 $magpie = new Magpie($config);
-$magpie->setLogger($logger);
+$magpie->setLogger($logger); // @todo: make optional
+$magpie->setPrimaryEntity(ExamplePrimaryEntity::class);
 
 try {
     $magpie->addSource(SimpleExample::class);

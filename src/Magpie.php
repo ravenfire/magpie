@@ -3,6 +3,7 @@
 namespace Ravenfire\Magpie;
 
 use Exception;
+use InvalidArgumentException;
 use Monolog\Logger;
 use Ravenfire\Magpie\Application\ManageData\InstallCommand;
 use Ravenfire\Magpie\Application\ManageData\ResetCommand;
@@ -11,6 +12,7 @@ use Ravenfire\Magpie\Application\ManageData\TeardownCommand;
 use Ravenfire\Magpie\Application\ManageData\UninstallCommand;
 use Ravenfire\Magpie\Application\RunAllCommand;
 use Ravenfire\Magpie\Data\DataManager;
+use Ravenfire\Magpie\Sources\AbstractPrimaryEntity;
 use Ravenfire\Magpie\Sources\AbstractSource;
 use Symfony\Component\Console\Application;
 
@@ -20,9 +22,7 @@ if (!defined('MAGPIE_ROOT')) {
 
 class Magpie
 {
-    /**
-     * @var Config
-     */
+    /** @var Config */
     protected $config;
 
     /** @var Logger */
@@ -31,14 +31,13 @@ class Magpie
     /** @var DataManager */
     protected $data;
 
-    /**
-     * @var AbstractSource[]
-     */
+    /** @var AbstractPrimaryEntity */
+    protected $primary_entity;
+
+    /** @var AbstractSource[] */
     protected $sources = [];
 
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     protected $sources_map = [];
 
     /**
@@ -202,5 +201,31 @@ class Magpie
     {
         $this->data = $data;
         return $this;
+    }
+
+    /**
+     * @param AbstractPrimaryEntity|string $primary_entity
+     * @return Magpie
+     */
+    public function setPrimaryEntity($primary_entity): Magpie
+    {
+        if (is_string($primary_entity) and class_exists($primary_entity)) {
+            $primary_entity = new $primary_entity($this);
+        }
+
+        if (!$primary_entity instanceof AbstractPrimaryEntity) {
+            throw new InvalidArgumentException("Primary Entity Must Extend AbstractPrimaryEntity");
+        }
+
+        $this->primary_entity = $primary_entity;
+        return $this;
+    }
+
+    /**
+     * @return AbstractPrimaryEntity
+     */
+    public function getPrimaryEntity(): AbstractPrimaryEntity
+    {
+        return $this->primary_entity;
     }
 }
