@@ -2,6 +2,7 @@
 
 namespace Ravenfire\Magpie\Examples\DataSource;
 
+use Ravenfire\Magpie\Examples\PrimaryEntity\PrimaryEntity;
 use Ravenfire\Magpie\Sources\AbstractSource;
 
 class DataExample extends AbstractSource
@@ -20,11 +21,13 @@ class DataExample extends AbstractSource
 
     public function execute()
     {
+        $primary = PrimaryEntity::where('id', 1);
+
         $model = new DataModel();
         $model->name = 'Michael';
         $model->favorite_color = 'Purple';
 
-        $this->save($model);
+        $this->save($model, $primary);
 
         $model = new DataModel();
         $model->name = 'James';

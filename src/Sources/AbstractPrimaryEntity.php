@@ -10,9 +10,6 @@ abstract class AbstractPrimaryEntity
     /** @var Magpie */
     protected $context;
 
-    /**
-     *
-     */
     public function __construct(Magpie $context)
     {
         $this->setContext($context);

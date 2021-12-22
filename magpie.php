@@ -10,12 +10,8 @@ use Ravenfire\Magpie\Magpie;
 
 require 'vendor/autoload.php';
 
-// @todo: The logs as well
-// @todo: Create eloquent models for primary entity and sources
+// @todo: Create eloquent models for primary entity
 // @todo: Connect to (and ensure exists) the primary entity
-// @todo: clean up CLI commands
-// @todo: Config and Logging to correct places
-// @todo: WISH - add tags
 
 $config = new Config(); // @todo: Config::from($json/yml/dotenv)
 
