@@ -29,6 +29,9 @@ class RunAllCommand extends AbstractMagpieCommand
         $this->getContext()->getLogger()->pushHandler(new ConsoleHandler($output));
 
         $job = new Job();
+        $job->name = Job::createName(); // @todo: all this to be passed in
+        $job->save();
+
         foreach ($this->getContext()->getAllSources() as $source) {
             $source->run($job, $output);
         }

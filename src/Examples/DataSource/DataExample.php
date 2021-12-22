@@ -20,6 +20,16 @@ class DataExample extends AbstractSource
 
     public function execute()
     {
-        // TODO: Implement execute() method.
+        $model = new DataModel();
+        $model->name = 'Michael';
+        $model->favorite_color = 'Purple';
+
+        $this->save($model);
+
+        $model = new DataModel();
+        $model->name = 'James';
+        $model->favorite_color = 'Orange';
+
+        $this->save($model);
     }
 }
