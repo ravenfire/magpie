@@ -4,7 +4,7 @@ namespace Ravenfire\Magpie\Sources;
 
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
-use Ravenfire\Magpie\Data\MigrationManager;
+use Ravenfire\Magpie\Data\Migrations\MigrationManager;
 use Ravenfire\Magpie\Magpie;
 use Symfony\Bridge\Monolog\Handler\ConsoleHandler;
 use Symfony\Component\Console\Output\OutputInterface;

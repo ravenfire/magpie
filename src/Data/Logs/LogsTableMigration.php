@@ -1,16 +1,21 @@
 <?php
 
-namespace Ravenfire\Magpie\Data\Migrations;
+namespace Ravenfire\Magpie\Data\Logs;
 
 use Illuminate\Database\Capsule\Manager;
-use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Ravenfire\Magpie\Data\Migrations\AbstractMigration;
 
-class CreateLogsTable extends Migration
+class LogsTableMigration extends AbstractMigration
 {
+    static public function getTableName(): string
+    {
+        return 'logs';
+    }
+
     public function up()
     {
-        Manager::schema()->create('logs', function (Blueprint $table) {
+        Manager::schema()->create(static::getTableName(), function (Blueprint $table) {
             $table->id();
             $table->string('source_key');
             $table->integer('level');
@@ -21,15 +26,5 @@ class CreateLogsTable extends Migration
             $table->json('context');
             $table->timestamps();
         });
-    }
-
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
-    {
-        Manager::schema()->drop('logs');
     }
 }

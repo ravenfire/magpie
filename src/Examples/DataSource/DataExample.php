@@ -9,7 +9,7 @@ class DataExample extends AbstractSource
     static public function getMigrations(): array
     {
         return [
-            'data_example' => TableMigration::class,
+            TableMigration::class,
         ];
     }
 

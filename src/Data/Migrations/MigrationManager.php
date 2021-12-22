@@ -1,23 +1,32 @@
 <?php
 
-namespace Ravenfire\Magpie\Data;
+namespace Ravenfire\Magpie\Data\Migrations;
 
 use Illuminate\Database\Capsule\Manager;
 use Illuminate\Database\Migrations\Migration;
-use Ravenfire\Magpie\Data\Migrations\CreateLogsTable;
+use InvalidArgumentException;
+use Ravenfire\Magpie\Data\Logs\LogsTableMigration;
 use Ravenfire\Magpie\Magpie;
 use Ravenfire\Magpie\Sources\AbstractSource;
 
 class MigrationManager
 {
     static protected $migrations = [
-        'logs' => CreateLogsTable::class,
+        LogsTableMigration::class,
     ];
 
     /**
      * @var Magpie
      */
     protected $context;
+
+    /**
+     * @return string[]
+     */
+    public static function getMigrations(): array
+    {
+        return self::$migrations;
+    }
 
     /**
      * @param Magpie $context
@@ -34,26 +43,22 @@ class MigrationManager
 
     public function up(array $migrations, callable $log_callback = null)
     {
-        foreach ($migrations as $table => $migration_class) {
+        foreach ($migrations as $migration_class) {
             /** @var Migration $migration */
             $migration = new $migration_class();
+
+            if (!$migration instanceof AbstractMigration) {
+                throw new InvalidArgumentException("Migration must be a valid migration");
+            }
 
             if ($log_callback) {
                 $log_callback($migration_class);
             }
 
-            if (!Manager::schema()->hasTable($table)) {
+            if (!Manager::schema()->hasTable($migration::getTableName())) {
                 $migration->up();
             }
         }
-    }
-
-    /**
-     * @return string[]
-     */
-    public static function getMigrations(): array
-    {
-        return self::$migrations;
     }
 
     public function downMagpie(callable $log_callback)
@@ -63,15 +68,19 @@ class MigrationManager
 
     public function down(array $migrations, callable $log_callback = null)
     {
-        foreach ($migrations as $table => $migration_class) {
+        foreach ($migrations as $migration_class) {
             /** @var Migration $migration */
             $migration = new $migration_class();
+
+            if (!$migration instanceof AbstractMigration) {
+                throw new InvalidArgumentException("Migration must be a valid migration");
+            }
 
             if ($log_callback) {
                 $log_callback($migration_class);
             }
 
-            if (Manager::schema()->hasTable($table)) {
+            if (Manager::schema()->hasTable($migration::getTableName())) {
                 $migration->down();
             }
         }

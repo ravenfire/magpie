@@ -3,31 +3,24 @@
 namespace Ravenfire\Magpie\Examples\PrimaryEntity;
 
 use Illuminate\Database\Capsule\Manager;
-use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Ravenfire\Magpie\Data\Migrations\AbstractMigration;
 
-class PrimaryMigration extends Migration
+class PrimaryMigration extends AbstractMigration
 {
-    public $table_name = 'primary_entity';
+    static public function getTableName(): string
+    {
+        return 'primary_entity';
+    }
 
     public function up()
     {
-        Manager::schema()->create($this->table_name, function (Blueprint $table) {
+        Manager::schema()->create(static::getTableName(), function (Blueprint $table) {
             $table->id();
             $table->string('one');
             $table->string('two');
             $table->string('three');
             $table->timestamps();
         });
-    }
-
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
-    {
-        Manager::schema()->drop($this->table_name);
     }
 }

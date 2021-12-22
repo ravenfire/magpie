@@ -10,7 +10,6 @@ use Ravenfire\Magpie\Magpie;
 
 require 'vendor/autoload.php';
 
-// @todo: look at what needs to be static
 // @todo: Create eloquent models for primary entity and sources
 // @todo: clean up CLI commands
 // @todo: Config and Logging to correct places

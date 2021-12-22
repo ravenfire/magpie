@@ -13,13 +13,13 @@ class ExamplePrimaryEntity extends AbstractPrimaryEntity
 
     static public function getKey(): string
     {
-        return 'primary-entity'; // @Todo: I may not actually need this
+        return 'primary-entity';
     }
 
     public static function getMigrations(): array
     {
         return [
-            'primary_entity' => PrimaryMigration::class,
+            PrimaryMigration::class,
         ];
     }
 }

@@ -3,7 +3,7 @@
 namespace Ravenfire\Magpie\Application\ManageData;
 
 use Ravenfire\Magpie\Application\AbstractMagpieCommand;
-use Ravenfire\Magpie\Data\MigrationManager;
+use Ravenfire\Magpie\Data\Migrations\MigrationManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
