@@ -1,16 +1,18 @@
 <?php
 
-use Monolog\Handler\HandlerInterface;
 use Monolog\Logger;
 use Ravenfire\Magpie\Config;
 use Ravenfire\Magpie\Examples\DataSource\DataExample;
 use Ravenfire\Magpie\Examples\PrimaryEntity\ExamplePrimaryEntity;
 use Ravenfire\Magpie\Examples\SimpleSource\SimpleExample;
+use Ravenfire\Magpie\Logging\DatabaseLogger;
 use Ravenfire\Magpie\Magpie;
 
 require 'vendor/autoload.php';
 
+// @todo: The logs as well
 // @todo: Create eloquent models for primary entity and sources
+// @todo: Connect to (and ensure exists) the primary entity
 // @todo: clean up CLI commands
 // @todo: Config and Logging to correct places
 // @todo: WISH - add tags
@@ -21,30 +23,7 @@ $config = new Config(); // @todo: Config::from($json/yml/dotenv)
 // @todo: all of this can move into `run()` or `__construct()`
 $logger = new Logger('magpie');
 //$logger->pushHandler(new MagpieDataLogger());
-$logger->pushHandler(new class implements HandlerInterface {
-
-    public function isHandling(array $record): bool
-    {
-        return true;
-    }
-
-    public function handle(array $record): bool
-    {
-        return true;
-    }
-
-    public function handleBatch(array $records): void
-    {
-        foreach ($records as $record) {
-            $this->handle($record);
-        }
-    }
-
-    public function close(): void
-    {
-//         TODO: Implement close() method.
-    }
-});
+$logger->pushHandler(new DatabaseLogger());
 
 $magpie = new Magpie($config);
 $magpie->setLogger($logger); // @todo: make optional

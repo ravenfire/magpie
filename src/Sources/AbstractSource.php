@@ -139,8 +139,6 @@ abstract class AbstractSource implements LoggerInterface
     {
         // @todo: Only save model if something has changed
         // @todo: in the Audit, describe what changed
-        // @todo: Connect to (and ensure exists) the primary entity
-        // @todo: The logs as well
 
         // Create new record in this source
         $model->save();
@@ -168,7 +166,8 @@ abstract class AbstractSource implements LoggerInterface
     {
         return [
             'source' => [
-                'key' => static::getKey(),
+                'key'    => static::getKey(),
+                'job_id' => $this->getJob()->id ?? null,
             ]
         ];
     }
@@ -228,7 +227,7 @@ abstract class AbstractSource implements LoggerInterface
     /**
      * @return Job
      */
-    public function getJob(): Job
+    public function getJob(): ?Job
     {
         return $this->job;
     }
