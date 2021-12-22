@@ -1,24 +1,24 @@
 {
-    "name": "ravenfire/magpie",
-    "description": "Collect data from various sources for later awesomeness",
-    "type": "library",
-    "autoload": {
-        "psr-4": {
-            "Ravenfire\\Magpie\\": "src/"
-        }
-    },
-    "authors": [
-        {
-            "name": "Michael Wilson",
-            "email": "mwilson@electricjones.me"
-        }
-    ],
-    "require": {
-        "symfony/console": "^5.4",
-        "symfony/stopwatch": "^5.4",
-        "symfony/dotenv": "^5.4",
-        "illuminate/database": "^8.76",
-        "monolog/monolog": "^2.3",
-        "symfony/monolog-bridge": "^5.4"
+  "name": "ravenfire/magpie",
+  "description": "Collect data from various sources for later awesomeness",
+  "type": "library",
+  "autoload": {
+    "psr-4": {
+      "Ravenfire\\Magpie\\": "src/"
     }
+  },
+  "authors": [
+    {
+      "name": "Michael Wilson",
+      "email": "mwilson@electricjones.me"
+    }
+  ],
+  "require": {
+    "symfony/console": "^5.4",
+    "symfony/dotenv": "^5.4",
+    "illuminate/database": "^8.76",
+    "monolog/monolog": "^2.3",
+    "symfony/monolog-bridge": "^5.4",
+    "ext-json": "*"
+  }
 }
