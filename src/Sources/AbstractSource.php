@@ -27,6 +27,22 @@ abstract class AbstractSource implements LoggerInterface
     protected $console_initialized = false;
 
     /**
+     * @return string
+     */
+    abstract static public function getKey(): string;
+
+    /**
+     * [
+     *     'table' => MigrationClass::class
+     * ]
+     * @return string[]
+     */
+    public static function getMigrations(): array
+    {
+        return [];
+    }
+
+    /**
      *
      */
     public function __construct(Magpie $context)
@@ -37,11 +53,6 @@ abstract class AbstractSource implements LoggerInterface
     }
 
     /**
-     * @return string
-     */
-    abstract static public function getKey(): string;
-
-    /**
      * @param OutputInterface $output
      * @return void
      */
@@ -50,6 +61,11 @@ abstract class AbstractSource implements LoggerInterface
         $this->initConsole($output);
         $this->execute();
     }
+
+    /**
+     * @return void
+     */
+    abstract public function execute();
 
     /**
      * @param OutputInterface $output
@@ -70,6 +86,62 @@ abstract class AbstractSource implements LoggerInterface
             $this->getLogger()->pushHandler($console_handler);
             $this->setConsoleInitialized(true);
         }
+    }
+
+    public function install()
+    {
+        $migrations = new MigrationManager($this->getContext());
+        $migrations->up(
+            static::getMigrations(),
+            function ($migration_class) {
+                $this->debug("Installing Migration: `{$migration_class}`");
+            }
+        );
+
+        $this->onInstall();
+    }
+
+    /**
+     * @return void
+     */
+    public function onInstall()
+    {
+    }
+
+    public function onUnInstall()
+    {
+    }
+
+    public function uninstall()
+    {
+        $migrations = new MigrationManager($this->getContext());
+        $migrations->down(
+            array_reverse(static::getMigrations()),
+            function ($migration_class) {
+                $this->alert("Uninstalling Migration: `{$migration_class}`");
+            }
+        );
+
+        $this->onUnInstall();
+    }
+
+    protected function buildContext(array $context): array
+    {
+        return array_merge($context, $this->buildDefaultLoggingContext());
+    }
+
+    protected function buildDefaultLoggingContext(): array
+    {
+        return array_merge($this->getSourceLoggingContext(), $this->getDefaultLoggingContext());
+    }
+
+    private function getSourceLoggingContext(): array
+    {
+        return [
+            'source' => [
+                'key' => static::getKey(),
+            ]
+        ];
     }
 
     /**
@@ -107,24 +179,6 @@ abstract class AbstractSource implements LoggerInterface
     }
 
     /**
-     * @return void
-     */
-    abstract public function execute();
-
-    public function install()
-    {
-        $migrations = new MigrationManager($this->getContext());
-        $migrations->up(
-            static::getMigrations(),
-            function ($migration_class) {
-                $this->debug("Installing Migration: `{$migration_class}`");
-            }
-        );
-
-        $this->onInstall();
-    }
-
-    /**
      * @return Magpie
      */
     public function getContext(): Magpie
@@ -142,39 +196,9 @@ abstract class AbstractSource implements LoggerInterface
         return $this;
     }
 
-    /**
-     * [
-     *     'table' => MigrationClass::class
-     * ]
-     * @return string[]
-     */
-    public static function getMigrations(): array
-    {
-        return [];
-    }
-
     public function debug($message, array $context = array())
     {
         $this->getLogger()->debug($message, $this->buildContext($context));
-    }
-
-    protected function buildContext(array $context): array
-    {
-        return array_merge($context, $this->buildDefaultLoggingContext());
-    }
-
-    protected function buildDefaultLoggingContext(): array
-    {
-        return array_merge($this->getSourceLoggingContext(), $this->getDefaultLoggingContext());
-    }
-
-    private function getSourceLoggingContext(): array
-    {
-        return [
-            'source' => [
-                'key' => static::getKey(),
-            ]
-        ];
     }
 
     /**
@@ -195,33 +219,9 @@ abstract class AbstractSource implements LoggerInterface
         return $this;
     }
 
-    /**
-     * @return void
-     */
-    public function onInstall()
-    {
-    }
-
-    public function uninstall()
-    {
-        $migrations = new MigrationManager($this->getContext());
-        $migrations->down(
-            array_reverse(static::getMigrations()),
-            function ($migration_class) {
-                $this->alert("Uninstalling Migration: `{$migration_class}`");
-            }
-        );
-
-        $this->onUnInstall();
-    }
-
     public function alert($message, array $context = array())
     {
         $this->getLogger()->alert($message, $this->buildContext($context));
-    }
-
-    public function onUnInstall()
-    {
     }
 
     public function emergency($message, array $context = array())
