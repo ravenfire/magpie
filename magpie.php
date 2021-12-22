@@ -5,7 +5,7 @@ use Ravenfire\Magpie\Config;
 use Ravenfire\Magpie\Examples\DataSource\DataExample;
 use Ravenfire\Magpie\Examples\PrimaryEntity\ExamplePrimaryEntity;
 use Ravenfire\Magpie\Examples\SimpleSource\SimpleExample;
-use Ravenfire\Magpie\Logging\DatabaseLogger;
+use Ravenfire\Magpie\Logging\MagpieDataLogger;
 use Ravenfire\Magpie\Magpie;
 
 require 'vendor/autoload.php';
@@ -23,7 +23,7 @@ $config = new Config(); // @todo: Config::from($json/yml/dotenv)
 // @todo: all of this can move into `run()` or `__construct()`
 $logger = new Logger('magpie');
 //$logger->pushHandler(new MagpieDataLogger());
-$logger->pushHandler(new DatabaseLogger());
+$logger->pushHandler(new MagpieDataLogger());
 
 $magpie = new Magpie($config);
 $magpie->setLogger($logger); // @todo: make optional
