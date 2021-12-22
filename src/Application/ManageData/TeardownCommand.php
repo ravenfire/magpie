@@ -32,10 +32,10 @@ class TeardownCommand extends AbstractMagpieCommand
         $helper = $this->getHelper('question');
         $question = new ConfirmationQuestion('This will delete all Magpie data and all sources. Continue?', false);
 
-//        if (!$helper->ask($input, $output, $question)) {
-//            $output->writeln("Probably a good choice");
-//            return Command::SUCCESS;
-//        }
+        if (!$helper->ask($input, $output, $question)) {
+            $output->writeln("Probably a good choice");
+            return Command::SUCCESS;
+        }
 
         // First, we uninstall all the sources
         $uninstall_all_command = $this->getApplication()->find('uninstall');
@@ -51,9 +51,8 @@ class TeardownCommand extends AbstractMagpieCommand
             throw new Exception("Uninstalls failed");
         }
 
-        $migrations = new MigrationManager($this->getContext());
-
         // Next, we remove the primary entity
+        $migrations = new MigrationManager($this->getContext());
         $primary_entity = $this->getContext()->getPrimaryEntity();
         $migrations->down(
             $primary_entity::getMigrations(),
