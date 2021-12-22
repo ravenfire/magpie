@@ -5,6 +5,8 @@ namespace Ravenfire\Magpie\Data\Migrations;
 use Illuminate\Database\Capsule\Manager;
 use Illuminate\Database\Migrations\Migration;
 use InvalidArgumentException;
+use Ravenfire\Magpie\Data\Audit\AuditTableMigration;
+use Ravenfire\Magpie\Data\Jobs\JobsTableMigration;
 use Ravenfire\Magpie\Data\Logs\LogsTableMigration;
 use Ravenfire\Magpie\Magpie;
 use Ravenfire\Magpie\Sources\AbstractSource;
@@ -13,6 +15,8 @@ class MigrationManager
 {
     static protected $migrations = [
         LogsTableMigration::class,
+        AuditTableMigration::class,
+        JobsTableMigration::class
     ];
 
     /**

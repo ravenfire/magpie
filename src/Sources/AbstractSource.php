@@ -2,8 +2,11 @@
 
 namespace Ravenfire\Magpie\Sources;
 
+use Illuminate\Database\Eloquent\Model;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
+use Ravenfire\Magpie\Data\Audit\Audit;
+use Ravenfire\Magpie\Data\Jobs\Job;
 use Ravenfire\Magpie\Data\Migrations\MigrationManager;
 use Ravenfire\Magpie\Magpie;
 use Symfony\Bridge\Monolog\Handler\ConsoleHandler;
@@ -25,6 +28,9 @@ abstract class AbstractSource implements LoggerInterface
 
     /** @var bool */
     protected $console_initialized = false;
+
+    /** @var Job */
+    private $job;
 
     /**
      * @return string
@@ -53,19 +59,34 @@ abstract class AbstractSource implements LoggerInterface
     }
 
     /**
-     * @param OutputInterface $output
+     * Creates a new Eloquent Model for each row and calls `$this->save($model)`
+     * Also logs as desired, which is saved as well
      * @return void
      */
-    public function run(OutputInterface $output)
-    {
-        $this->initConsole($output);
-        $this->execute();
-    }
+    abstract public function execute();
 
     /**
      * @return void
      */
-    abstract public function execute();
+    public function onInstall()
+    {
+    }
+
+    public function onUnInstall()
+    {
+    }
+
+    /**
+     * @param Job $job
+     * @param OutputInterface $output
+     * @return void
+     */
+    public function run(Job $job, OutputInterface $output)
+    {
+        $this->setJob($job);
+        $this->initConsole($output);
+        $this->execute();
+    }
 
     /**
      * @param OutputInterface $output
@@ -101,17 +122,6 @@ abstract class AbstractSource implements LoggerInterface
         $this->onInstall();
     }
 
-    /**
-     * @return void
-     */
-    public function onInstall()
-    {
-    }
-
-    public function onUnInstall()
-    {
-    }
-
     public function uninstall()
     {
         $migrations = new MigrationManager($this->getContext());
@@ -123,6 +133,24 @@ abstract class AbstractSource implements LoggerInterface
         );
 
         $this->onUnInstall();
+    }
+
+    protected function save(Model $model)
+    {
+        // @todo: Only save model if something has changed
+        // @todo: in the Audit, describe what changed
+
+        // Create new record in this source
+        $model->save();
+
+        // Create a new Audit Record because something changed
+        $audit = new Audit([
+            'job_id'     => $this->getJob()->id,
+            'record_id'  => $model->id,
+            'source_key' => static::getKey(),
+        ]);
+
+        $audit->save();
     }
 
     protected function buildContext(array $context): array
@@ -193,6 +221,25 @@ abstract class AbstractSource implements LoggerInterface
     public function setContext(Magpie $context): self
     {
         $this->context = $context;
+        return $this;
+    }
+
+    /**
+     * @return Job
+     */
+    public function getJob(): Job
+    {
+        return $this->job;
+    }
+
+
+    /**
+     * @param Job $job
+     * @return AbstractSource
+     */
+    public function setJob(Job $job): AbstractSource
+    {
+        $this->job = $job;
         return $this;
     }
 

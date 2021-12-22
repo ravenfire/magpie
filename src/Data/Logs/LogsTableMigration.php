@@ -18,6 +18,7 @@ class LogsTableMigration extends AbstractMigration
         Manager::schema()->create(static::getTableName(), function (Blueprint $table) {
             $table->id();
             $table->string('source_key');
+            $table->string('job_id');
             $table->integer('level');
             $table->string('level_name');
             $table->string('channel');

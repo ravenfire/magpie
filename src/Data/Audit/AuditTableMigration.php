@@ -1,0 +1,35 @@
+<?php
+
+namespace Ravenfire\Magpie\Data\Audit;
+
+use Illuminate\Database\Capsule\Manager;
+use Illuminate\Database\Schema\Blueprint;
+use Ravenfire\Magpie\Data\Migrations\AbstractMigration;
+
+class AuditTableMigration extends AbstractMigration
+{
+    public function up()
+    {
+        Manager::schema()->create(static::getTableName(), function (Blueprint $table) {
+            $table->id();
+            $table->integer('job_id');
+            $table->integer('record_id');
+            $table->string('source_key');
+            $table->timestamps();
+        });
+    }
+
+    static public function getTableName(): string
+    {
+        return 'audit';
+    }
+}
+
+// 1. Job will have MANY audit records
+// 2. Audit records will belong to ONE Job
+
+// 3. Audit Record will have ONE source record
+// 4. Source Records will belong to ONE audit record
+
+// 5. Job will have MANY logs
+// 6. Logs will have ONE job
