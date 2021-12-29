@@ -26,7 +26,7 @@ class RunAllCommand extends AbstractMagpieCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->getContext()->getLogger()->pushHandler(new ConsoleHandler($output));
+        $this->getContext()->getLogger()->pushHandler(new ConsoleHandler($output)); //@todo intialize logger like other commands 
 
         $job = new Job();
         $job->name = Job::createName(); // @todo: all this to be passed in

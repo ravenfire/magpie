@@ -1,25 +1,29 @@
 <?php
 
-namespace Ravenfire\Magpie\Examples\DataSource;
+namespace Ravenfire\Magpie\Ravenfire;
 
 use Illuminate\Database\Capsule\Manager;
 use Illuminate\Database\Schema\Blueprint;
 use Ravenfire\Magpie\Data\Migrations\AbstractMigration;
 
-class TableMigration extends AbstractMigration
+class GamesMigration extends AbstractMigration
 {
-    static public function getTableName(): string
-    {
-        return 'data_example';
-    }
 
     public function up()
     {
         Manager::schema()->create(static::getTableName(), function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('favorite_color');
+            $table->date('year_published');
+            $table->string('description');
+            $table->string('boardgame_publisher');
+            $table->string('boardgame_artist')->nullable(true);
             $table->timestamps();
         });
+    }
+
+    static public function getTableName(): string
+    {
+        return "games";
     }
 }

@@ -2,9 +2,24 @@
 
 namespace Ravenfire\Magpie\Examples\PrimaryEntity;
 
-use Illuminate\Database\Eloquent\Model;
+use Ravenfire\Magpie\Sources\AbstractPrimaryEntity;
 
-class PrimaryEntity extends Model
+class PrimaryEntity extends AbstractPrimaryEntity //Micahel changed from ExamplePrimaryEntity
 {
-    protected $table = 'primary_entity';
+    static public function getModelClass(): string
+    {
+        return "\Some\Class"; // @todo
+    }
+
+    static public function getKey(): string
+    {
+        return 'primary-entity';
+    }
+
+    public static function getMigrations(): array
+    {
+        return [
+            PrimaryMigration::class,
+        ];
+    }
 }

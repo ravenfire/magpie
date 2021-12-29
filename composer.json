@@ -19,6 +19,7 @@
     "illuminate/database": "^8.76",
     "monolog/monolog": "^2.3",
     "symfony/monolog-bridge": "^5.4",
-    "ext-json": "*"
+    "ext-json": "*",
+    "guzzlehttp/guzzle": "^7.4"
   }
 }
