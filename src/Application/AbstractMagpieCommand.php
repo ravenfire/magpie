@@ -16,7 +16,7 @@ class AbstractMagpieCommand extends Command
     /** @var Magpie */
     protected $context;
 
-    public function __construct(Magpie $context, $name = null)
+    public function __construct(Magpie $context, $name = null) //@todo update context to Magpie.
     {
         $this->setContext($context);
         parent::__construct($name);

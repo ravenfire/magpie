@@ -1,25 +1,24 @@
 <?php
 
-namespace Ravenfire\Magpie\Examples\PrimaryEntity;
+namespace Ravenfire\Magpie\Examples\DataSource;
 
 use Illuminate\Database\Capsule\Manager;
 use Illuminate\Database\Schema\Blueprint;
 use Ravenfire\Magpie\Data\Migrations\AbstractMigration;
 
-class PrimaryMigration extends AbstractMigration
+class DataExampleMigration extends AbstractMigration
 {
     static public function getTableName(): string
     {
-        return 'primary_entity';
+        return 'data_example';
     }
 
     public function up()
     {
         Manager::schema()->create(static::getTableName(), function (Blueprint $table) {
             $table->id();
-            $table->string('one');
-            $table->string('two');
-            $table->string('three');
+            $table->string('name');
+            $table->string('favorite_color');
             $table->timestamps();
         });
     }

@@ -137,9 +137,15 @@ abstract class AbstractSource implements LoggerInterface
 
     protected function save(Model $me, Model $primary)
     {
+        //@todo: update $me name
         // @todo: Only save model if something has changed
         // @todo: in the Audit, describe what changed
 
+        //@todo: update game_id to more generic
+        $me->game_id = $primary->id;
+
+        // Now, we save the primary version
+        $primary->save();
         // Create new record in this source
         $me->save();
 
@@ -150,9 +156,6 @@ abstract class AbstractSource implements LoggerInterface
         $audit->source_key = static::getKey();
 
         $audit->save();
-
-        // Now, we save the primary version
-        $primary->save();
     }
 
     protected function buildContext(array $context): array

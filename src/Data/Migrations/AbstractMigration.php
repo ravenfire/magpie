@@ -17,5 +17,7 @@ abstract class AbstractMigration extends Migration
         Manager::schema()->drop(static::getTableName());
     }
 
+    abstract public function up();
+
     abstract static public function getTableName(): string;
 }
