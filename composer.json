@@ -20,6 +20,7 @@
     "monolog/monolog": "^2.3",
     "symfony/monolog-bridge": "^5.4",
     "ext-json": "*",
-    "guzzlehttp/guzzle": "^7.4"
+    "guzzlehttp/guzzle": "^7.4",
+    "illuminate/support": "^8.77"
   }
 }
