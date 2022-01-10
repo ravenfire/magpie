@@ -13,9 +13,10 @@ class GamesMigration extends AbstractMigration
     {
         Manager::schema()->create(static::getTableName(), function (Blueprint $table) {
             $table->id();
+            $table->string('game_key')->unique();
             $table->string('name');
             $table->date('year_published');
-            $table->string('description');
+            $table->string('description')->nullable(true);
             $table->string('boardgame_publisher');
             $table->string('boardgame_artist')->nullable(true);
             $table->timestamps();
