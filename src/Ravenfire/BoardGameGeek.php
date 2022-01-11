@@ -2,19 +2,27 @@
 
 namespace Ravenfire\Magpie\Ravenfire;
 
-use Illuminate\Support\Facades\DB;
-use mysql_xdevapi\Table;
-use Ravenfire\Magpie\Ravenfire\Game;
-use Ravenfire\Magpie\Sources\AbstractSource;
 use GuzzleHttp\Client;
-use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Arr;
+use Ravenfire\Magpie\Sources\AbstractSource;
 
 class BoardGameGeek extends AbstractSource
 {
-    public function searchInfo(array $inputs, bool $exponential): array {
+    //todo optimize, reformat, and add docBlocks.
+    /**
+     * Returns an array of inputs used in searching Board Game Geek's API.
+     *
+     * If the $exponential arguement to set to true each $input is paired with the other inputs in the $inputs array
+     *  including a pair of itself. For example, ['a'] returns ['aa'] and ['b,w'] returns ['bb', 'bw', 'wb', 'ww'].
+     *
+     * @param array $inputs
+     * @param bool $exponential
+     * @return array
+     */
+    public function searchInfo(array $inputs, bool $exponential): array
+    {
         $search = [];
-        if($exponential){
+        if ($exponential) {
             foreach ($inputs as $input) {
                 for ($i = 0; $i < count($inputs); $i++) {
                     $search[] = $input . $inputs[$i];
@@ -25,20 +33,34 @@ class BoardGameGeek extends AbstractSource
         return $inputs;
     }
 
-    public function populateInfo($gamesInfo, object $table, string $columnName){
-        if($gamesInfo === "0" or $gamesInfo === null){
+    /**
+     * If null values do not exist, sets key and value for a aiven table even if value is an array.
+     *
+     * @param $gamesInfo
+     * @param object $table
+     * @param string $columnName
+     * @return string|void|null
+     */
+    public function populateInfo($gamesInfo, object $table, string $columnName)
+    {
+        if ($gamesInfo === "0" or $gamesInfo === null) {
             $this->alert("{$columnName} not provided for {$table}");
             return $table->$columnName = null;
-        }
-        else if(is_array($gamesInfo)){
+        } else if (is_array($gamesInfo)) {
             $response = implode("; ", $gamesInfo);
             return $table->$columnName = $response;
-        }
-        else{
+        } else {
             $table->$columnName = $gamesInfo;
         }
     }
 
+    /**
+     * Checks to make sure essential info is not null.
+     *
+     * @param $response
+     * @param $column
+     * @return bool
+     */
     public function gameKeyChecker($response, $column): bool
     {
         if (!Arr::get($response, $column)
@@ -50,6 +72,14 @@ class BoardGameGeek extends AbstractSource
         return true;
     }
 
+
+    /**
+     * Requests game info from the Board Game Geek API, creates new objects if needed and persists the results appropriately.
+     *
+     * @param string $gameId
+     * @param $client
+     * @return false|void
+     */
     public function saveGameInfo(string $gameId, $client)
     {
         $response = $client->request("GET", 'boardgame/' . $gameId);
@@ -64,64 +94,64 @@ class BoardGameGeek extends AbstractSource
         $responseBoardgame = $response["boardgame"];
         $essentialColumns = ["name", "boardgamepublisher", "yearpublished"];
 
-        foreach($essentialColumns as $essentialColumn){
-            if($this->gameKeyChecker($responseBoardgame, $essentialColumn) and is_array($responseBoardgame[$essentialColumn])){
+        foreach ($essentialColumns as $essentialColumn) {
+            if ($this->gameKeyChecker($responseBoardgame, $essentialColumn) and is_array($responseBoardgame[$essentialColumn])) {
                 $responseBoardgame[$essentialColumn] = $responseBoardgame[$essentialColumn][0];
-            }
-            else if(!$this->gameKeyChecker($responseBoardgame, $essentialColumn)) {
+            } else if (!$this->gameKeyChecker($responseBoardgame, $essentialColumn)) {
                 return false;
             }
         }
 
         $gameKey = Game::gameKey($responseBoardgame['name'], $responseBoardgame['boardgamepublisher'], $responseBoardgame['yearpublished']);
         $game = Game::where('game_key', $gameKey)->get();
-        if(count($game) === 0){
+        if (count($game) === 0) {
             $game = new Game();
             $game->game_key = $gameKey;
-        }else{
+        } else {
             BoardGameGeek::notice("Game already exists. Skipping to next game");
             return false;
         }
 
         //Game
         $gameColumns = [
-            "name"=>"name",
-            "boardgamepublisher"=>"boardgame_publisher",
-            "yearpublished"=>"year_published",
-            "description"=>"description",
-            "boardgameartist"=>"boardgame_artist"];
+            "name" => "name",
+            "boardgamepublisher" => "boardgame_publisher",
+            "yearpublished" => "year_published",
+            "description" => "description",
+            "boardgameartist" => "boardgame_artist"
+        ];
 
-        foreach($gameColumns as $key => $value){ //todo lookup how to write key and values
-            if(Arr::get($response["boardgame"], $key)){ //todo use gameColumn key
+        foreach ($gameColumns as $key => $value) { //todo lookup how to write key and values
+            if (Arr::get($response["boardgame"], $key)) { //todo use gameColumn key
                 $this->populateInfo($response["boardgame"][$key], $game, $value);
             }
         }
 
         //BGG
         $boardgamegeek = BoardGameGeekModel::where('bgg_foreign_id', $gameId)->get();
-        if(count($boardgamegeek) === 0){
+        if (count($boardgamegeek) === 0) {
             $boardgamegeek = new BoardGameGeekModel();
-        }else{
+        } else {
             BoardGameGeek::notice("Game already exists. Skipping to next game");
             return false;
         }
 
-        $boardgamegeek->bgg_foreign_id = explode("?",$gameId)[0];
+        $boardgamegeek->bgg_foreign_id = explode("?", $gameId)[0];
 
         $bggColumns = [
-            "playingtime"=>"average_playingtime",
-            "age"=>"for_player_ages",
-            "boardgamemechanic"=>"boardgame_mechanic",
-            "thumbnail"=>"thumbnail",
-            "image"=>"image",
-            "boardgamefamily"=>"boardgame_family",
-            "boardgamecategory"=>"boardgame_category",
-            "boardgamedesigner"=>"boardgame_designer",
-            "boardgameversion"=>"boardgame_version",
-            "comment"=>"comments"];
+            "playingtime" => "average_playingtime",
+            "age" => "for_player_ages",
+            "boardgamemechanic" => "boardgame_mechanic",
+            "thumbnail" => "thumbnail",
+            "image" => "image",
+            "boardgamefamily" => "boardgame_family",
+            "boardgamecategory" => "boardgame_category",
+            "boardgamedesigner" => "boardgame_designer",
+            "boardgameversion" => "boardgame_version",
+            "comment" => "comments"];
 
-        foreach($bggColumns as $key=>$value){ //todo lookup how to write key and values
-            if(Arr::get($response['boardgame'], $key)){ //todo use gameColumn key
+        foreach ($bggColumns as $key => $value) { //todo lookup how to write key and values
+            if (Arr::get($response['boardgame'], $key)) { //todo use gameColumn key
                 $this->populateInfo($response["boardgame"][$key], $boardgamegeek, $value);
             }
         }
@@ -139,14 +169,14 @@ class BoardGameGeek extends AbstractSource
         }
 
         $rank = Arr::get($response, 'boardgame.statistics.ratings.ranks.rank');
-        if (Arr::get($rank, '@attributes.value')){
+        if (Arr::get($rank, '@attributes.value')) {
             if (Arr::get($rank, '@attributes.value') !== null and Arr::get($rank, '@attributes.value') !== "0") {
                 $boardgamegeek->boardgame_rank = Arr::get($rank, '@attributes.value');
-            }else{
+            } else {
                 BoardGameGeek::alert("Boardgame rank not provided for BGG foreign id: {$boardgamegeek -> bgg_foreign_id}");
                 $boardgamegeek->boardgame_rank = "Not ranked";
             }
-        }else if(Arr::get($rank[0], '@attributes.value')) {
+        } else if (Arr::get($rank[0], '@attributes.value')) {
             if (Arr::get($rank[0], '@attributes.value') !== null and Arr::get($rank[0], '@attributes.value') !== "0") {
                 $boardgamegeek->boardgame_rank = Arr::get($rank[0], '@attributes.value');
             } else {
@@ -158,6 +188,13 @@ class BoardGameGeek extends AbstractSource
         BoardGameGeek::save($boardgamegeek, $game);
     }
 
+
+    /**
+     * Decodes xml to json.
+     *
+     * @param $body
+     * @return mixed
+     */
     public function xmlToJson($body)
     {
         $xml = simplexml_load_string($body, "SimpleXMLElement", LIBXML_NOCDATA); //todo include simplexml in composer. Already installed on Mac's
@@ -165,6 +202,15 @@ class BoardGameGeek extends AbstractSource
         return json_decode($json, true);
     }
 
+
+    /**
+     * String displaying how many players can play.
+     *
+     * @param $min
+     * @param $max
+     * @param $source
+     * @return string
+     */
     public function playerCount($min, $max, $source): string
     {
         if ($min === null || $max === null) {
@@ -175,19 +221,9 @@ class BoardGameGeek extends AbstractSource
     }
 
     /**
-     * @inheritDoc
-     */
-    static public function getKey(): string
-    {
-        return "BoardGameGeek";
-    }
-
-    static public function getModelClass(): string
-    {
-        return BoardGameGeekModel::class;
-    }
-
-    /**
+     * Main function of the class. Sets search parameters, makes calls to Board Game Geek API and persists appropriate
+     *  values to designated tables.
+     *
      * @inheritDoc
      */
     public function execute()
@@ -229,54 +265,31 @@ class BoardGameGeek extends AbstractSource
         }
     }
 
-//    public function debug($message, array $context = array())
-//    public function info($message, array $context = array())
-//    public function notice($message, array $context = array())
-//    public function warning($message, array $context = array())
-//    public function error($message, array $context = array())
-//    public function alert($message, array $context = array())
-//    public function critical($message, array $context = array())
-//    public function emergency($message, array $context = array())
+    /**
+     *
+     *
+     * @return string
+     */
+    static public function getModelClass(): string
+    {
+        return BoardGameGeekModel::class;
+    }
 
+    /**
+     *
+     *
+     * @inheritDoc
+     */
+    static public function getKey(): string
+    {
+        return "BoardGameGeek";
+    }
 
-        //        Manager::schema()->create(static::getTableName(), function (Blueprint $table) {
-//            $table->id();
-//            $table->integer('game_id');
-//            $table->foreign('game_id')->references('id')->on('games');
-//            $table->integer('bgg_foreign_id');
-//            $table->integer('number_of_players');
-//            $table->integer('for_player_ages');
-//            $table->integer('average_playtime');
-//            $table->string('boardgame_mechanic');
-////            $table->('images');
-////            $table->('thumbnail');
-////            $table->string('boardgame_family');
-//            $table->string('boardgame_designer');
-//            $table->string('boardgame_version');
-//            $table->string('boardgame_implementation');
-////            $table->string('poll');
-//            $table->string('comments');
-////            $table->string('statistics');
-//            $table->timestamps();
-//        });
-
-//        protected function execute(InputInterface $input, OutputInterface $output): int
-//    {
-//        $this->getContext()->getLogger()->pushHandler(new ConsoleHandler($output)); //@todo intialize logger like other commands
-//
-//        $job = new Job();
-//        $job->name = Job::createName(); // @todo: all this to be passed in
-//        $job->save();
-//
-//        foreach ($this->getContext()->getAllSources() as $source) {
-//            $source->run($job, $output);
-//        }
-//
-//        $this->getContext()->getLogger()->info("Done");
-//
-//        return Command::SUCCESS;
-//    }
-
+    /**
+     *
+     *
+     * @return string[]
+     */
     public static function getMigrations(): array
     {
         return [

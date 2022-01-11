@@ -2,7 +2,6 @@
 
 namespace Ravenfire\Magpie\Ravenfire;
 
-use Illuminate\Database\Eloquent\Model;
 use Ravenfire\Magpie\Sources\AbstractPrimaryEntity;
 
 class Games extends AbstractPrimaryEntity
