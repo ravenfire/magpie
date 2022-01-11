@@ -6,5 +6,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class BoardGameGeekModel extends Model
 {
-    protected $table="board_game_geek";
+    protected $table = "board_game_geek";
 }
