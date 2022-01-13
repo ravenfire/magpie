@@ -44,7 +44,7 @@ Ravenfire is creating this as a mono repository for now, developing the sources 
 
 Before v1.0 we will extract our sources and entities and replace them with very simple examples. We will then open source Magpie as a framework. We may continue to open source our sources as well.
 
-## Liscence
+## License
 MIT. See Liscence File
 
 ## Contributors
