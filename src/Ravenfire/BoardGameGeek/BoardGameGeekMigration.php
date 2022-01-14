@@ -1,14 +1,21 @@
 <?php
 
-namespace Ravenfire\Magpie\Ravenfire;
+namespace Ravenfire\Magpie\Ravenfire\BoardGameGeek;
 
 use Illuminate\Database\Capsule\Manager;
 use Illuminate\Database\Schema\Blueprint;
 use Ravenfire\Magpie\Data\Migrations\AbstractMigration;
 
+/**
+ * Details table information for the BoardGameGeekModel.
+ */
 class BoardGameGeekMigration extends AbstractMigration
 {
-
+    /**
+     * Set comlumn names.
+     *
+     * @return void
+     */
     public function up()
     {
         Manager::schema()->create(static::getTableName(), function (Blueprint $table) {
@@ -26,15 +33,17 @@ class BoardGameGeekMigration extends AbstractMigration
             $table->string('boardgame_category')->nullable(true);
             $table->string('boardgame_designer')->nullable(true);
             $table->string('boardgame_version')->nullable(true);
-//            $table->string('boardgame_implementation');
-//            $table->string('poll');
             $table->string('comments')->nullable(true);;
-//            $table->string('statistics');
             $table->string('boardgame_rank')->nullable(true);
             $table->timestamps();
         });
     }
 
+    /**
+     * Sets table name to "board_game_geek".
+     *
+     * @return string
+     */
     static public function getTableName(): string
     {
         return "board_game_geek";

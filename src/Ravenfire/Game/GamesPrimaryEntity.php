@@ -1,12 +1,14 @@
 <?php
 
-namespace Ravenfire\Magpie\Ravenfire;
+namespace Ravenfire\Magpie\Ravenfire\Game;
 
 use Ravenfire\Magpie\Sources\AbstractPrimaryEntity;
 
-class Games extends AbstractPrimaryEntity
+/**
+ * Established PrimaryEntity
+ */
+class GamesPrimaryEntity extends AbstractPrimaryEntity
 {
-
     /**
      * @inheritDoc
      */
@@ -20,7 +22,7 @@ class Games extends AbstractPrimaryEntity
      */
     static public function getModelClass(): string
     {
-        return Game::class;
+        return GameModel::class;
     }
 
     /**

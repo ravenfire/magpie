@@ -1,6 +1,7 @@
-vendor
-./composer.lock
-./composer.phar
-data
+vendor/
+composer.lock
+composer.phar
+data/
 scratch.php
 scratch.md
+.idea/

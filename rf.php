@@ -2,13 +2,13 @@
 
 use Monolog\Logger;
 use Ravenfire\Magpie\Config;
-use Ravenfire\Magpie\Examples\DataSource\DataSource; //Micahel - was DataExample
-use Ravenfire\Magpie\Examples\PrimaryEntity\PrimaryEntity; //Michael - was ExamplePrimaryEntity
-use Ravenfire\Magpie\Examples\SimpleSource\SimpleExample;
 use Ravenfire\Magpie\Logging\MagpieDataLogger;
 use Ravenfire\Magpie\Magpie;
-use Ravenfire\Magpie\Ravenfire\BoardGameGeek;
-use Ravenfire\Magpie\Ravenfire\Games;
+use Ravenfire\Magpie\Ravenfire\BoardGameGeek\BoardGameGeekSource;
+use Ravenfire\Magpie\Ravenfire\Game\GamesPrimaryEntity;
+
+//Micahel - was DataExample
+//Michael - was ExamplePrimaryEntity
 
 require 'vendor/autoload.php';
 
@@ -25,10 +25,10 @@ $logger->pushHandler(new MagpieDataLogger());
 
 $magpie = new Magpie($config);
 $magpie->setLogger($logger); // @todo: make optional
-$magpie->setPrimaryEntity(Games::class); //Michael was ExamplePrimaryEntity
+$magpie->setPrimaryEntity(GamesPrimaryEntity::class);
 
 try {
-    $magpie->addSource(BoardGameGeek::class);
+    $magpie->addSource(BoardGameGeekSource::class);
 } catch (Exception $exception) {
     die($exception->getMessage()); // @todo: Probably better handling
 }

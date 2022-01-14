@@ -1,14 +1,70 @@
 <?php
 
-namespace Ravenfire\Magpie\Ravenfire;
+namespace Ravenfire\Magpie\Ravenfire\BoardGameGeek;
 
 use GuzzleHttp\Client;
 use Illuminate\Support\Arr;
+use Ravenfire\Magpie\Ravenfire\Game\GameModel;
 use Ravenfire\Magpie\Sources\AbstractSource;
 
-class BoardGameGeek extends AbstractSource
+/**
+ * Established BoardGameGeekSource
+ */
+class BoardGameGeekSource extends AbstractSource
 {
-    //todo optimize, reformat, and add docBlocks.
+    /**
+     * Main function of the class. Sets search parameters, makes calls to Board Game Geek API and persists appropriate
+     *  values to designated tables.
+     *
+     * @inheritDoc
+     */
+    public function execute()
+    {
+        $this->alert("Beginning BGG.");
+
+        $client = new Client([
+            'base_uri' => 'https://www.boardgamegeek.com/xmlapi/',
+            'timeout' => 150.0,
+        ]);
+
+        $alphabetLibrary = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"];
+
+        $searches = $this->searchInfo($alphabetLibrary, true);
+//        $searches = $this->searchInfo(["br"], false);
+
+        foreach ($searches as $search) {
+            var_dump($search);
+            $response = $client->request("GET", 'search', [
+                "query" => ['search' => $search]
+            ]);
+
+            echo "\n";
+            echo $response->getStatusCode();
+            echo "\n";
+
+            $body = $response->getBody()->getContents();
+            $games = $this->xmlToJson($body);
+
+            if (Arr::get($games, 'boardgame.@attributes')) {
+                $gameId = $games["boardgame"]["@attributes"]["objectid"] . "?comments=1" . "&stats=1";
+                $this->saveGameInfo($gameId, $client);
+            } else {
+                foreach ($games['boardgame'] as $game) {
+                    $gameId = $game["@attributes"]["objectid"] . "?comments=1" . "&stats=1";
+                    $this->saveGameInfo($gameId, $client);
+                }
+            }
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    static public function getKey(): string
+    {
+        return "BoardGameGeek";
+    }
+
     /**
      * Returns an array of inputs used in searching Board Game Geek's API.
      *
@@ -66,12 +122,11 @@ class BoardGameGeek extends AbstractSource
         if (!Arr::get($response, $column)
             or $response[$column] === "0"
             or $response[$column] === null) {
-            BoardGameGeek::notice("Essential info not provided. Skipping to next game");
+            $this->notice("Essential info not provided. Skipping to next game");
             return false;
         }
         return true;
     }
-
 
     /**
      * Requests game info from the Board Game Geek API, creates new objects if needed and persists the results appropriately.
@@ -102,13 +157,13 @@ class BoardGameGeek extends AbstractSource
             }
         }
 
-        $gameKey = Game::gameKey($responseBoardgame['name'], $responseBoardgame['boardgamepublisher'], $responseBoardgame['yearpublished']);
-        $game = Game::where('game_key', $gameKey)->get();
+        $gameKey = GameModel::gameKey($responseBoardgame['name'], $responseBoardgame['boardgamepublisher'], $responseBoardgame['yearpublished']);
+        $game = GameModel::where('game_key', $gameKey)->get();
         if (count($game) === 0) {
-            $game = new Game();
+            $game = new GameModel();
             $game->game_key = $gameKey;
         } else {
-            BoardGameGeek::notice("Game already exists. Skipping to next game");
+            $this->notice("Game already exists. Skipping to next game");
             return false;
         }
 
@@ -121,8 +176,8 @@ class BoardGameGeek extends AbstractSource
             "boardgameartist" => "boardgame_artist"
         ];
 
-        foreach ($gameColumns as $key => $value) { //todo lookup how to write key and values
-            if (Arr::get($response["boardgame"], $key)) { //todo use gameColumn key
+        foreach ($gameColumns as $key => $value) {
+            if (Arr::get($response["boardgame"], $key)) {
                 $this->populateInfo($response["boardgame"][$key], $game, $value);
             }
         }
@@ -132,7 +187,7 @@ class BoardGameGeek extends AbstractSource
         if (count($boardgamegeek) === 0) {
             $boardgamegeek = new BoardGameGeekModel();
         } else {
-            BoardGameGeek::notice("Game already exists. Skipping to next game");
+            $this->notice("Game already exists. Skipping to next game");
             return false;
         }
 
@@ -158,9 +213,9 @@ class BoardGameGeek extends AbstractSource
 
         if (Arr::get($response, 'boardgame.minplayers') and Arr::get($response, 'boardgame.maxplayers')) {
             $boardgamegeek->number_of_players =
-                BoardGameGeek::playerCount($response["boardgame"]["minplayers"], $response["boardgame"]["maxplayers"], $boardgamegeek);
+                $this->playerCount($response["boardgame"]["minplayers"], $response["boardgame"]["maxplayers"], $boardgamegeek);
         } else {
-            BoardGameGeek::alert("Number of players not provided for BGG foreign id: {$boardgamegeek -> bgg_foreign_id}");
+            $this->alert("Number of players not provided for BGG foreign id: {$boardgamegeek -> bgg_foreign_id}");
             $boardgamegeek->number_of_players = null;
         }
 
@@ -173,21 +228,20 @@ class BoardGameGeek extends AbstractSource
             if (Arr::get($rank, '@attributes.value') !== null and Arr::get($rank, '@attributes.value') !== "0") {
                 $boardgamegeek->boardgame_rank = Arr::get($rank, '@attributes.value');
             } else {
-                BoardGameGeek::alert("Boardgame rank not provided for BGG foreign id: {$boardgamegeek -> bgg_foreign_id}");
+                $this->alert("Boardgame rank not provided for BGG foreign id: {$boardgamegeek -> bgg_foreign_id}");
                 $boardgamegeek->boardgame_rank = "Not ranked";
             }
         } else if (Arr::get($rank[0], '@attributes.value')) {
             if (Arr::get($rank[0], '@attributes.value') !== null and Arr::get($rank[0], '@attributes.value') !== "0") {
                 $boardgamegeek->boardgame_rank = Arr::get($rank[0], '@attributes.value');
             } else {
-                BoardGameGeek::alert("Boardgame rank not provided for BGG foreign id: {$boardgamegeek -> bgg_foreign_id}");
+                $this->alert("Boardgame rank not provided for BGG foreign id: {$boardgamegeek -> bgg_foreign_id}");
                 $boardgamegeek->boardgame_rank = "Not ranked";
             }
         }
 
-        BoardGameGeek::save($boardgamegeek, $game);
+        $this->save($boardgamegeek, $game);
     }
-
 
     /**
      * Decodes xml to json.
@@ -201,7 +255,6 @@ class BoardGameGeek extends AbstractSource
         $json = json_encode($xml);
         return json_decode($json, true);
     }
-
 
     /**
      * String displaying how many players can play.
@@ -221,54 +274,7 @@ class BoardGameGeek extends AbstractSource
     }
 
     /**
-     * Main function of the class. Sets search parameters, makes calls to Board Game Geek API and persists appropriate
-     *  values to designated tables.
-     *
      * @inheritDoc
-     */
-    public function execute()
-    {
-        $this->alert("Beginning BGG.");
-
-        $client = new Client([
-            'base_uri' => 'https://www.boardgamegeek.com/xmlapi/',
-            'timeout' => 150.0,
-        ]);
-
-        $alphabetLibrary = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"];
-
-        $searches = $this->searchInfo($alphabetLibrary, true);
-//        $searches = $this->searchInfo(["br"], false);
-
-        foreach ($searches as $search) {
-            var_dump($search);
-            $response = $client->request("GET", 'search', [
-                "query" => ['search' => $search]
-            ]);
-
-            echo "\n";
-            echo $response->getStatusCode();
-            echo "\n";
-
-            $body = $response->getBody()->getContents();
-            $games = $this->xmlToJson($body);
-
-            if (Arr::get($games, 'boardgame.@attributes')) {
-                $gameId = $games["boardgame"]["@attributes"]["objectid"] . "?comments=1" . "&stats=1";
-                $this->saveGameInfo($gameId, $client);
-            } else {
-                foreach ($games['boardgame'] as $game) {
-                    $gameId = $game["@attributes"]["objectid"] . "?comments=1" . "&stats=1";
-                    $this->saveGameInfo($gameId, $client);
-                }
-            }
-        }
-    }
-
-    /**
-     *
-     *
-     * @return string
      */
     static public function getModelClass(): string
     {
@@ -276,19 +282,7 @@ class BoardGameGeek extends AbstractSource
     }
 
     /**
-     *
-     *
      * @inheritDoc
-     */
-    static public function getKey(): string
-    {
-        return "BoardGameGeek";
-    }
-
-    /**
-     *
-     *
-     * @return string[]
      */
     public static function getMigrations(): array
     {
