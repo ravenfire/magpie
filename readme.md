@@ -47,5 +47,9 @@ Before v1.0 we will extract our sources and entities and replace them with very 
 ## License
 MIT. See Liscence File
 
+
+
 ## Contributors
+
 - Michael <https://github.com/electricjones>
+- James <https://github.com/JamesRichards07>

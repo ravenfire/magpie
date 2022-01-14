@@ -1,14 +1,21 @@
 <?php
 
-namespace Ravenfire\Magpie\Ravenfire;
+namespace Ravenfire\Magpie\Ravenfire\Game;
 
 use Illuminate\Database\Capsule\Manager;
 use Illuminate\Database\Schema\Blueprint;
 use Ravenfire\Magpie\Data\Migrations\AbstractMigration;
 
+/**
+ * Details table information for the GameModel.
+ */
 class GamesMigration extends AbstractMigration
 {
-
+    /**
+     * Sets column names.
+     *
+     * @return void
+     */
     public function up()
     {
         Manager::schema()->create(static::getTableName(), function (Blueprint $table) {
@@ -23,6 +30,11 @@ class GamesMigration extends AbstractMigration
         });
     }
 
+    /**
+     * Sets table name to "games".
+     *
+     * @return string
+     */
     static public function getTableName(): string
     {
         return "games";
