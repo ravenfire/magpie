@@ -176,8 +176,8 @@ class BoardGameGeekSource extends AbstractSource
             "boardgameartist" => "boardgame_artist"
         ];
 
-        foreach ($gameColumns as $key => $value) { //todo lookup how to write key and values
-            if (Arr::get($response["boardgame"], $key)) { //todo use gameColumn key
+        foreach ($gameColumns as $key => $value) {
+            if (Arr::get($response["boardgame"], $key)) {
                 $this->populateInfo($response["boardgame"][$key], $game, $value);
             }
         }
