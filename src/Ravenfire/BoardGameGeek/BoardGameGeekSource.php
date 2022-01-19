@@ -58,14 +58,6 @@ class BoardGameGeekSource extends AbstractSource
     }
 
     /**
-     * @inheritDoc
-     */
-    static public function getKey(): string
-    {
-        return "BoardGameGeek";
-    }
-
-    /**
      * Returns an array of inputs used in searching Board Game Geek's API.
      *
      * If the $exponential arguement to set to true each $input is paired with the other inputs in the $inputs array
@@ -90,42 +82,16 @@ class BoardGameGeekSource extends AbstractSource
     }
 
     /**
-     * If null values do not exist, sets key and value for a aiven table even if value is an array.
+     * Decodes xml to json.
      *
-     * @param $gamesInfo
-     * @param object $table
-     * @param string $columnName
-     * @return string|void|null
+     * @param $body
+     * @return mixed
      */
-    public function populateInfo($gamesInfo, object $table, string $columnName)
+    public function xmlToJson($body)
     {
-        if ($gamesInfo === "0" or $gamesInfo === null) {
-            $this->alert("{$columnName} not provided for {$table}");
-            return $table->$columnName = null;
-        } else if (is_array($gamesInfo)) {
-            $response = implode("; ", $gamesInfo);
-            return $table->$columnName = $response;
-        } else {
-            $table->$columnName = $gamesInfo;
-        }
-    }
-
-    /**
-     * Checks to make sure essential info is not null.
-     *
-     * @param $response
-     * @param $column
-     * @return bool
-     */
-    public function gameKeyChecker($response, $column): bool
-    {
-        if (!Arr::get($response, $column)
-            or $response[$column] === "0"
-            or $response[$column] === null) {
-            $this->notice("Essential info not provided. Skipping to next game");
-            return false;
-        }
-        return true;
+        $xml = simplexml_load_string($body, "SimpleXMLElement", LIBXML_NOCDATA); //todo include simplexml in composer. Already installed on Mac's
+        $json = json_encode($xml);
+        return json_decode($json, true);
     }
 
     /**
@@ -153,21 +119,87 @@ class BoardGameGeekSource extends AbstractSource
             if ($this->gameKeyChecker($responseBoardgame, $essentialColumn) and is_array($responseBoardgame[$essentialColumn])) {
                 $responseBoardgame[$essentialColumn] = $responseBoardgame[$essentialColumn][0];
             } else if (!$this->gameKeyChecker($responseBoardgame, $essentialColumn)) {
+                $this->notice("Essential game information missing. Skipping to next game.");
                 return false;
             }
         }
 
+        $saveNeeded = false;
         $gameKey = GameModel::gameKey($responseBoardgame['name'], $responseBoardgame['boardgamepublisher'], $responseBoardgame['yearpublished']);
         $game = GameModel::where('game_key', $gameKey)->get();
+
         if (count($game) === 0) {
             $game = new GameModel();
             $game->game_key = $gameKey;
-        } else {
-            $this->notice("Game already exists. Skipping to next game");
-            return false;
+            $this->createNewGame($response, $game);
+            $saveNeeded = true;
+        } else{
+            $this->alert("Game already exists. Checking for updates");
         }
 
-        //Game
+        $bggColumns = [
+            "playingtime" => "average_playingtime",
+            "age" => "for_player_ages",
+            "boardgamemechanic" => "boardgame_mechanic",
+            "thumbnail" => "thumbnail",
+            "image" => "image",
+            "boardgamefamily" => "boardgame_family",
+            "boardgamecategory" => "boardgame_category",
+            "boardgamedesigner" => "boardgame_designer",
+            "boardgameversion" => "boardgame_version",
+            "comment" => "comments"
+        ];
+
+        $gameId = explode("?", $gameId)[0];
+        $boardgamegeekgame = BoardGameGeekModel::where('bgg_foreign_id', $gameId)->get();
+        $boardgamegeek = new BoardGameGeekModel();
+
+        if(!$saveNeeded){
+            $boardgamegeek->game_id = $game[0]->id;
+            $game = null;
+        };
+
+        $boardgamegeek->bgg_foreign_id = $gameId;
+        $this->createNewBoardGameGeek($response, $bggColumns, $boardgamegeek);
+
+        if(count($boardgamegeekgame) !== 0){
+            foreach($bggColumns as $bggColumn){
+                if($boardgamegeekgame[0]->$bggColumn != $boardgamegeek->$bggColumn){
+                    dd($boardgamegeekgame[0]->$bggColumn, $boardgamegeek->$bggColumn);
+                    $boardgamegeek->$bggColumn = $boardgamegeekgame[0]->$bggColumn;
+                    $saveNeeded = true;
+                }
+            }
+        }
+        $saveNeeded ? $this->save($boardgamegeek, $game) : null;
+    }
+
+    /**
+     * Checks to make sure essential info is not null.
+     *
+     * @param $response
+     * @param $column
+     * @return bool
+     */
+    public function gameKeyChecker($response, $column): bool
+    {
+        if (!Arr::get($response, $column)
+            or $response[$column] === "0"
+            or $response[$column] === null) {
+            $this->notice("Essential info not provided. Skipping to next game");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Populates game table.
+     *
+     * @param $response
+     * @param $game
+     * @return void
+     */
+    public function createNewGame($response, $game){
         $gameColumns = [
             "name" => "name",
             "boardgamepublisher" => "boardgame_publisher",
@@ -181,30 +213,39 @@ class BoardGameGeekSource extends AbstractSource
                 $this->populateInfo($response["boardgame"][$key], $game, $value);
             }
         }
+    }
 
-        //BGG
-        $boardgamegeek = BoardGameGeekModel::where('bgg_foreign_id', $gameId)->get();
-        if (count($boardgamegeek) === 0) {
-            $boardgamegeek = new BoardGameGeekModel();
+    /**
+     * If null values do not exist, sets key and value for a aiven table even if value is an array.
+     *
+     * @param $gamesInfo
+     * @param object $table
+     * @param string $columnName
+     * @return string|void|null
+     */
+    public function populateInfo($gamesInfo, object $table, string $columnName)
+    {
+        if ($gamesInfo === "0" or $gamesInfo === null) {
+            $this->alert("{$columnName} not provided for {$table}");
+            return $table->$columnName = null;
+        } else if (is_array($gamesInfo)) {
+            //@todo Array to String conversion error exits here
+            $response = implode("; ", $gamesInfo);
+            return $table->$columnName = $response;
         } else {
-            $this->notice("Game already exists. Skipping to next game");
-            return false;
+            $table->$columnName = $gamesInfo;
         }
+    }
 
-        $boardgamegeek->bgg_foreign_id = explode("?", $gameId)[0];
-
-        $bggColumns = [
-            "playingtime" => "average_playingtime",
-            "age" => "for_player_ages",
-            "boardgamemechanic" => "boardgame_mechanic",
-            "thumbnail" => "thumbnail",
-            "image" => "image",
-            "boardgamefamily" => "boardgame_family",
-            "boardgamecategory" => "boardgame_category",
-            "boardgamedesigner" => "boardgame_designer",
-            "boardgameversion" => "boardgame_version",
-            "comment" => "comments"];
-
+    /**
+     * Populates boardgamegeek table.
+     *
+     * @param $response
+     * @param $bggColumns
+     * @param $boardgamegeek
+     * @return void
+     */
+    public function createNewBoardGameGeek($response, $bggColumns, $boardgamegeek){
         foreach ($bggColumns as $key => $value) { //todo lookup how to write key and values
             if (Arr::get($response['boardgame'], $key)) { //todo use gameColumn key
                 $this->populateInfo($response["boardgame"][$key], $boardgamegeek, $value);
@@ -239,21 +280,6 @@ class BoardGameGeekSource extends AbstractSource
                 $boardgamegeek->boardgame_rank = "Not ranked";
             }
         }
-
-        $this->save($boardgamegeek, $game);
-    }
-
-    /**
-     * Decodes xml to json.
-     *
-     * @param $body
-     * @return mixed
-     */
-    public function xmlToJson($body)
-    {
-        $xml = simplexml_load_string($body, "SimpleXMLElement", LIBXML_NOCDATA); //todo include simplexml in composer. Already installed on Mac's
-        $json = json_encode($xml);
-        return json_decode($json, true);
     }
 
     /**
@@ -271,6 +297,14 @@ class BoardGameGeekSource extends AbstractSource
             $source->number_of_players = null;
         }
         return $max === $min ? "$max players" : "$min to $max players";
+    }
+
+    /**
+     * @inheritDoc
+     */
+    static public function getKey(): string
+    {
+        return "BoardGameGeek";
     }
 
     /**

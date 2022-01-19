@@ -135,24 +135,25 @@ abstract class AbstractSource implements LoggerInterface
         $this->onUnInstall();
     }
 
-    protected function save(Model $me, Model $primary)
+    protected function save(Model $source, $primary = null)
     {
-        // @todo: update $me name
         // @todo: Only save model if something has changed
         // @todo: in the Audit, describe what changed
         // Now, we save the primary version
-        $primary->save();
+        if($primary !== null){
+            $primary->save();
+            $source->game_id = $primary->id;
+        }
 
         //@todo: update game_id to more generic
-        $me->game_id = $primary->id;
-
+//        dd($primary, $source);
         // Create new record in this source
-        $me->save();
+        $source->save();
 
         // Create a new Audit Record because something changed
         $audit = new Audit();
         $audit->job_id = $this->getJob()->id;
-        $audit->record_id = $me->id;
+        $audit->record_id = $source->id;
         $audit->source_key = static::getKey();
 
         $audit->save();
