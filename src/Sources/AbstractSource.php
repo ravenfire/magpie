@@ -139,6 +139,7 @@ abstract class AbstractSource implements LoggerInterface
     {
         // @todo: Only save model if something has changed
         // @todo: in the Audit, describe what changed
+
         // Now, we save the primary version
         if($primary !== null){
             $primary->save();
@@ -146,7 +147,6 @@ abstract class AbstractSource implements LoggerInterface
         }
 
         //@todo: update game_id to more generic
-//        dd($primary, $source);
         // Create new record in this source
         $source->save();
 
