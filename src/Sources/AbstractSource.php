@@ -207,12 +207,10 @@ abstract class AbstractSource implements LoggerInterface
         }
 
         $audit = new Audit();
-        $audit->job_id = $this->getJob()->id;
-        $audit->record_id = $source->id;
-        $audit->source_key = static::getKey();
 
         if ($changes !== null) {
             foreach ($changes as $key => $value) {
+                $this->essentialAuditColumns($source, $audit);
                 $audit->column_name = json_encode($key);
                 $audit->old_value = json_encode($source[$key]);
                 $audit->new_value = json_encode($value);
@@ -220,7 +218,23 @@ abstract class AbstractSource implements LoggerInterface
             }
             return false;
         }
+
+        $this->essentialAuditColumns($source, $audit);
         $audit->save();
+    }
+
+    /**
+     * Populates the essential audit columns
+     *
+     * @param $source
+     * @param $audit
+     * @return void
+     */
+    public function essentialAuditColumns($source, $audit)
+    {
+        $audit->job_id = $this->getJob()->id;
+        $audit->record_id = $source->id;
+        $audit->source_key = static::getKey();
     }
 
     /**
