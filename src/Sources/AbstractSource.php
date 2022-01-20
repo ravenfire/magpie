@@ -206,10 +206,9 @@ abstract class AbstractSource implements LoggerInterface
             return false;
         }
 
-        $audit = new Audit();
-
         if ($changes !== null) {
             foreach ($changes as $key => $value) {
+                $audit = new Audit();
                 $this->essentialAuditColumns($source, $audit);
                 $audit->column_name = json_encode($key);
                 $audit->old_value = json_encode($source[$key]);
@@ -219,6 +218,7 @@ abstract class AbstractSource implements LoggerInterface
             return false;
         }
 
+        $audit = new Audit();
         $this->essentialAuditColumns($source, $audit);
         $audit->save();
     }
