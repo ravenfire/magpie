@@ -213,20 +213,13 @@ abstract class AbstractSource implements LoggerInterface
 
         if ($changes !== null) {
             foreach ($changes as $key => $value) {
-                $column .= "{$key}, ";
-                $old .= "$source[$key], ";
-                $new .= "$value, ";
+                $audit->column_name = json_encode($key);
+                $audit->old_value = json_encode($source[$key]);
+                $audit->new_value = json_encode($value);
+                $audit->save();
             }
-            $characters = ", ";
-            $column_name = rtrim($column, $characters);
-            $old_value = rtrim($old, $characters);
-            $new_value = rtrim($new, $characters);
-
-            $audit->column_name = json_encode($column_name);
-            $audit->old_value = json_encode($old_value);
-            $audit->new_value = json_encode($new_value);
+            return false;
         }
-
         $audit->save();
     }
 
