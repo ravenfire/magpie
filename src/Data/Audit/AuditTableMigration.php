@@ -15,6 +15,9 @@ class AuditTableMigration extends AbstractMigration
             $table->integer('job_id');
             $table->integer('record_id');
             $table->string('source_key');
+            $table->string('column_name')->nullable(true);
+            $table->string('old_value')->nullable(true);
+            $table->string('new_value')->nullable(true);
             $table->timestamps();
         });
     }
