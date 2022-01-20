@@ -32,6 +32,8 @@ abstract class AbstractSource implements LoggerInterface
     /** @var Job */
     private $job;
 
+    abstract static public function getPrimaryEntityJoinColumnName();
+
     /**
      * @return string
      */
@@ -42,6 +44,21 @@ abstract class AbstractSource implements LoggerInterface
      *     'table' => MigrationClass::class
      * ]
      * @return string[]
+     */
+    public function findChanges(Model $newData, Model $existing_source, $columnsToCheck)
+    {
+        $changes = [];
+        foreach ($columnsToCheck as $columnToCheck) {
+            if ($newData->$columnToCheck != $existing_source->$columnToCheck) {
+                $existing_source->$columnToCheck = $newData->$columnToCheck;
+                $changes[$columnToCheck] = $newData;
+            }
+        }
+        return $changes;
+    }
+
+    /**
+     * @return array
      */
     public static function getMigrations(): array
     {
@@ -72,6 +89,9 @@ abstract class AbstractSource implements LoggerInterface
     {
     }
 
+    /**
+     * @return void
+     */
     public function onUnInstall()
     {
     }
@@ -109,6 +129,9 @@ abstract class AbstractSource implements LoggerInterface
         }
     }
 
+    /**
+     * @return void
+     */
     public function install()
     {
         $migrations = new MigrationManager($this->getContext());
@@ -122,6 +145,9 @@ abstract class AbstractSource implements LoggerInterface
         $this->onInstall();
     }
 
+    /**
+     * @return void
+     */
     public function uninstall()
     {
         $migrations = new MigrationManager($this->getContext());
@@ -135,45 +161,100 @@ abstract class AbstractSource implements LoggerInterface
         $this->onUnInstall();
     }
 
-    protected function save(Model $source, $primary = null)
+    /**
+     * Checks for new primary entity and source info, updated source info, and updates the audit table as needed.
+     *
+     * @param Model $source
+     * @param $primary
+     * @param $existing_source
+     * @param array $sourceColumns
+     * @return void
+     */
+    protected function save(Model $source, $primary, $existing_source, array $sourceColumns)
     {
-        // @todo: Only save model if something has changed
-        // @todo: in the Audit, describe what changed
-
-        // Now, we save the primary version
-        if($primary !== null){
+        // Create new primary entity and source if game doesn't already exist.
+        if ($primary !== null) {
             $primary->save();
-            $source->game_id = $primary->id;
+            $column_name = static::getPrimaryEntityJoinColumnName();
+            $source->{$column_name} = $primary->id;
+            $source->save();
         }
 
-        //@todo: update game_id to more generic
-        // Create new record in this source
-        $source->save();
+        // Update source if changes are found.
+        if ($existing_source !== null) {
+            $changes = $this->findChanges($source, $existing_source, $sourceColumns);
+            $source->id = $existing_source->id;
+            $existing_source->save();
+        } else {
+            $changes = null;
+        }
 
-        // Create a new Audit Record because something changed
+        // Creates a new Audit Record for new source info or if something changed.
+        $this->updateAuditTable($source, $changes);
+    }
+
+    /**
+     * Checks for and only saves new and updated data.
+     *
+     * @param $source
+     * @param $changes
+     * @return false|void
+     */
+    public function updateAuditTable($source, $changes)
+    {
+        if ($changes === []) {
+            return false;
+        }
+
         $audit = new Audit();
         $audit->job_id = $this->getJob()->id;
         $audit->record_id = $source->id;
         $audit->source_key = static::getKey();
 
+        if ($changes !== null) {
+            foreach ($changes as $key => $value) {
+                $column .= "{$key}, ";
+                $old .= "$source[$key], ";
+                $new .= "$value, ";
+            }
+            $characters = ", ";
+            $column_name = rtrim($column, $characters);
+            $old_value = rtrim($old, $characters);
+            $new_value = rtrim($new, $characters);
+
+            $audit->column_name = json_encode($column_name);
+            $audit->old_value = json_encode($old_value);
+            $audit->new_value = json_encode($new_value);
+        }
+
         $audit->save();
     }
 
+    /**
+     * @param array $context
+     * @return array
+     */
     protected function buildContext(array $context): array
     {
         return array_merge($context, $this->buildDefaultLoggingContext());
     }
 
+    /**
+     * @return array
+     */
     protected function buildDefaultLoggingContext(): array
     {
         return array_merge($this->getSourceLoggingContext(), $this->getDefaultLoggingContext());
     }
 
+    /**
+     * @return array[]
+     */
     private function getSourceLoggingContext(): array
     {
         return [
             'source' => [
-                'key'    => static::getKey(),
+                'key' => static::getKey(),
                 'job_id' => $this->getJob()->id ?? null,
             ]
         ];

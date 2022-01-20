@@ -47,11 +47,11 @@ class BoardGameGeekSource extends AbstractSource
 
             if (Arr::get($games, 'boardgame.@attributes')) {
                 $gameId = $games["boardgame"]["@attributes"]["objectid"] . "?comments=1" . "&stats=1";
-                $this->saveGameInfo($gameId, $client);
+                $this->getAndSaveGameInfo($gameId, $client);
             } else {
                 foreach ($games['boardgame'] as $game) {
                     $gameId = $game["@attributes"]["objectid"] . "?comments=1" . "&stats=1";
-                    $this->saveGameInfo($gameId, $client);
+                    $this->getAndSaveGameInfo($gameId, $client);
                 }
             }
         }
@@ -101,7 +101,7 @@ class BoardGameGeekSource extends AbstractSource
      * @param $client
      * @return false|void
      */
-    public function saveGameInfo(string $gameId, $client)
+    public function getAndSaveGameInfo(string $gameId, $client)
     {
         $response = $client->request("GET", 'boardgame/' . $gameId);
 
@@ -131,12 +131,27 @@ class BoardGameGeekSource extends AbstractSource
         if (count($game) === 0) {
             $game = new GameModel();
             $game->game_key = $gameKey;
-            $this->createNewGame($response, $game);
+            $this->createNewGame($responseBoardgame, $game);
             $saveNeeded = true;
-        } else{
+        } else {
             $this->alert("Game already exists. Checking for updates");
+            $game = null;
         }
 
+        $this->saveGameData($responseBoardgame, $gameId, $game, $saveNeeded);
+    }
+
+    /**
+     * Creates new BGG game instance, populates the data, and save the primary entity and source game data.
+     *
+     * @param $response
+     * @param $gameId
+     * @param $game
+     * @param $saveNeeded
+     * @return void
+     */
+    public function saveGameData($response, $gameId, $game, $saveNeeded)
+    {
         $bggColumns = [
             "playingtime" => "average_playingtime",
             "age" => "for_player_ages",
@@ -151,27 +166,20 @@ class BoardGameGeekSource extends AbstractSource
         ];
 
         $gameId = explode("?", $gameId)[0];
-        $boardgamegeekgame = BoardGameGeekModel::where('bgg_foreign_id', $gameId)->get();
+        $existing_model = BoardGameGeekModel::where('bgg_foreign_id', $gameId)->get();
         $boardgamegeek = new BoardGameGeekModel();
-
-        if(!$saveNeeded){
-            $boardgamegeek->game_id = $game[0]->id;
-            $game = null;
-        };
 
         $boardgamegeek->bgg_foreign_id = $gameId;
         $this->createNewBoardGameGeek($response, $bggColumns, $boardgamegeek);
 
-        if(count($boardgamegeekgame) !== 0){
-            foreach($bggColumns as $bggColumn){
-                if($boardgamegeekgame[0]->$bggColumn != $boardgamegeek->$bggColumn){
-                    dd($boardgamegeekgame[0]->$bggColumn, $boardgamegeek->$bggColumn);
-                    $boardgamegeek->$bggColumn = $boardgamegeekgame[0]->$bggColumn;
-                    $saveNeeded = true;
-                }
-            }
+        if (count($existing_model) !== 0) {
+            $existing_model = $existing_model[0];
+            $saveNeeded = true;
+        } else {
+            $existing_model = null;
         }
-        $saveNeeded ? $this->save($boardgamegeek, $game) : null;
+
+        $saveNeeded ? $this->save($boardgamegeek, $game, $existing_model, $bggColumns) : null;
     }
 
     /**
@@ -209,8 +217,8 @@ class BoardGameGeekSource extends AbstractSource
         ];
 
         foreach ($gameColumns as $key => $value) {
-            if (Arr::get($response["boardgame"], $key)) {
-                $this->populateInfo($response["boardgame"][$key], $game, $value);
+            if (Arr::get($response, $key)) {
+                $this->populateInfo($response[$key], $game, $value);
             }
         }
     }
@@ -247,24 +255,24 @@ class BoardGameGeekSource extends AbstractSource
      */
     public function createNewBoardGameGeek($response, $bggColumns, $boardgamegeek){
         foreach ($bggColumns as $key => $value) { //todo lookup how to write key and values
-            if (Arr::get($response['boardgame'], $key)) { //todo use gameColumn key
-                $this->populateInfo($response["boardgame"][$key], $boardgamegeek, $value);
+            if (Arr::get($response, $key)) { //todo use gameColumn key
+                $this->populateInfo($response[$key], $boardgamegeek, $value);
             }
         }
 
-        if (Arr::get($response, 'boardgame.minplayers') and Arr::get($response, 'boardgame.maxplayers')) {
+        if (Arr::get($response, 'minplayers') and Arr::get($response, 'maxplayers')) {
             $boardgamegeek->number_of_players =
-                $this->playerCount($response["boardgame"]["minplayers"], $response["boardgame"]["maxplayers"], $boardgamegeek);
+                $this->playerCount($response["minplayers"], $response["maxplayers"], $boardgamegeek);
         } else {
             $this->alert("Number of players not provided for BGG foreign id: {$boardgamegeek -> bgg_foreign_id}");
             $boardgamegeek->number_of_players = null;
         }
 
-        if (Arr::get($response, 'boardgame.age')) {
+        if (Arr::get($response, 'age')) {
             $boardgamegeek->for_player_ages .= "+";
         }
 
-        $rank = Arr::get($response, 'boardgame.statistics.ratings.ranks.rank');
+        $rank = Arr::get($response, 'statistics.ratings.ranks.rank');
         if (Arr::get($rank, '@attributes.value')) {
             if (Arr::get($rank, '@attributes.value') !== null and Arr::get($rank, '@attributes.value') !== "0") {
                 $boardgamegeek->boardgame_rank = Arr::get($rank, '@attributes.value');
@@ -297,6 +305,11 @@ class BoardGameGeekSource extends AbstractSource
             $source->number_of_players = null;
         }
         return $max === $min ? "$max players" : "$min to $max players";
+    }
+
+    public static function getPrimaryEntityJoinColumnName()
+    {
+        return "game_id";
     }
 
     /**
