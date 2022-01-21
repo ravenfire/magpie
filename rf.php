@@ -7,9 +7,6 @@ use Ravenfire\Magpie\Magpie;
 use Ravenfire\Magpie\Ravenfire\BoardGameGeek\BoardGameGeekSource;
 use Ravenfire\Magpie\Ravenfire\Game\GamesPrimaryEntity;
 
-//Micahel - was DataExample
-//Michael - was ExamplePrimaryEntity
-
 require 'vendor/autoload.php';
 
 // @todo: Create eloquent models for primary entity
