@@ -23,7 +23,7 @@ $logger->pushHandler(new MagpieDataLogger());
 
 $magpie = new Magpie($config);
 $magpie->setLogger($logger); // @todo: make optional
-$magpie->setPrimaryEntity(PrimaryEntity::class); //Michael was ExamplePrimaryEntity
+$magpie->setPrimaryEntity(PrimaryEntity::class);
 
 try {
     $magpie->addSource(SimpleExample::class);
