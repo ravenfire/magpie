@@ -11,11 +11,19 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 
+/**
+ * Creates uninstall command.
+ */
 class UninstallCommand extends AbstractMagpieCommand
 {
     protected static $defaultName = 'uninstall';
     protected static $defaultDescription = "Uninstalls all Sources";
 
+    /**
+     * Takes user inputs
+     *
+     * @return void
+     */
     protected function configure(): void
     {
         $this->setHelp("Uninstalls All Sources");
@@ -26,6 +34,8 @@ class UninstallCommand extends AbstractMagpieCommand
     }
 
     /**
+     *
+     *
      * @throws Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): int

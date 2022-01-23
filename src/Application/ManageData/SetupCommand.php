@@ -10,17 +10,33 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 
+/**
+ * Creates Setup command option.
+ */
 class SetupCommand extends AbstractMagpieCommand
 {
     protected static $defaultName = 'data:setup';
     protected static $defaultDescription = "Run all migrations";
 
+    /**
+     * Takes user inputs
+     *
+     * @return void
+     */
     protected function configure(): void
     {
         $this->setHelp("Creates all tables for all sources");
         // Adding arguments here
     }
 
+    /**
+     *
+     *
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     * @throws \Exception
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $migrations = new MigrationManager($this->getContext());

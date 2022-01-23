@@ -11,51 +11,53 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-
+/**
+ * Joins two tables.
+ */
 class SqlJoinScript extends AbstractMagpieCommand
 {
     protected static $defaultName = 'sql:join';
-    protected static $defaultDescription = "Sql query counting the number of every group in a column";
+    protected static $defaultDescription = "Sql query joining two tables";
 
+    /**
+     * Takes uses inputs
+     *
+     * @return void
+     */
     protected function configure(): void
     {
-        $this->setHelp("Sql query counting the number of every group in a column");
-        $this->addArgument('tableOne', InputArgument::REQUIRED, "First table to use");
-        $this->addArgument('tableTwo', InputArgument::REQUIRED, "Second table to use");
-        $this->addArgument('tableOneJoinColumn', InputArgument::REQUIRED, "Table one column to join");
-        $this->addArgument('tableTwoJoinColumn', InputArgument::REQUIRED, "Table two column to join");
+        $this->setHelp("Sql query joining two tables");
+        $this->addArgument('table_one', InputArgument::REQUIRED, "First table to use");
+        $this->addArgument('table+two', InputArgument::REQUIRED, "Second table to use");
+        $this->addArgument('table_one_join_column', InputArgument::REQUIRED, "Table one column to join");
+        $this->addArgument('table_two_join_column', InputArgument::REQUIRED, "Table two column to join");
     }
 
+    /**
+     * Builds a table from the sql script based off of user inputs
+     *
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     */
     public function execute(InputInterface $input, OutputInterface $output)
     {
         $this->getContext()->getLogger()->pushHandler(new ConsoleHandler($output));
 
-        $tableOne = $input->getArgument('tableOne');
-        $tableTwo = $input->getArgument('tableTwo');
-        $tableOneJoinColumn = $input->getArgument('tableOneJoinColumn');
-        $tableTwoJoinColumn = $input->getArgument('tableTwoJoinColumn');
+        $table_one = $input->getArgument('table_one');
+        $table_two = $input->getArgument('table_two');
+        $table_one_join_column = $input->getArgument('table_one_join_column');
+        $table_two_join_column = $input->getArgument('table_two_join_column');
 
-        $results = $this->index($tableOne, $tableTwo, $tableOneJoinColumn, $tableTwoJoinColumn);
+        $results = $this->index($table_one, $table_two, $table_one_join_column, $table_two_join_column);
 
-        foreach ($results[0] as $result => $data) {
-            $dbColumns[] = $result;
-        }
+        $db_columns = [];
 
-        $rows = [];
-        foreach ($results as $result) {
-            $row = [];
-            foreach ($dbColumns as $dbColumn) {
-                if (strlen($result->$dbColumn) > 12) {
-                    $result->$dbColumn = substr($result->$dbColumn, 0, 12);
-                }
-                $row[] = $result->$dbColumn;
-            }
-            $rows[] = $row;
-        }
+        $rows = $this->setStrLen($results, $db_columns);
 
         $table_helper = new Table($output);
         $table_helper->setRows($rows);
-        $table_helper->setHeaders($dbColumns);
+        $table_helper->setHeaders($db_columns);
         $table_helper->render();
 
         $this->getContext()->getLogger()->info("Done");
@@ -63,13 +65,21 @@ class SqlJoinScript extends AbstractMagpieCommand
         return COMMAND::SUCCESS;
     }
 
-    public function index($tableOne, $tableTwo, $tableOneJoinColumn, $tableTwoJoinColumn)
+    /**
+     * Creates sql script which joins two tables.
+     *
+     * @param $table_one
+     * @param $table_two
+     * @param $table_one_join_column
+     * @param $table_two_join_column
+     * @return mixed
+     */
+    public function index($table_one, $table_two, $table_one_join_column, $table_two_join_column)
     {
         $sql = "";
         $sql .= "SELECT * ";
-        $sql .= "FROM {$tableOne} ";
-        $sql .= "JOIN {$tableTwo} ON {$tableOneJoinColumn} = {$tableTwoJoinColumn} ";
-        $sql .= "LIMIT 10";
+        $sql .= "FROM {$table_one} ";
+        $sql .= "JOIN {$table_two} ON {$table_one_join_column} = {$table_two_join_column} ";
 
         return DB::select($sql);
     }

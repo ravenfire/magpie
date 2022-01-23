@@ -9,11 +9,19 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * Creates Install command option.
+ */
 class InstallCommand extends AbstractMagpieCommand
 {
     protected static $defaultName = 'install';
     protected static $defaultDescription = "Installs all Sources";
 
+    /**
+     * Takes user inputs.
+     *
+     * @return void
+     */
     protected function configure(): void
     {
         $this->setHelp("Installs Sources");
@@ -23,6 +31,8 @@ class InstallCommand extends AbstractMagpieCommand
     }
 
     /**
+     *
+     *
      * @throws Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): int

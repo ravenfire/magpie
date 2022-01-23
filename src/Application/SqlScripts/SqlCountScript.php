@@ -12,12 +12,19 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-
+/**
+ *  Table counting values from a designated column.
+ */
 class SqlCountScript extends AbstractMagpieCommand
 {
     protected static $defaultName = 'sql:count';
     protected static $defaultDescription = "Sql query counting the number of every group in a column";
 
+    /**
+     * Takes uses inputs
+     *
+     * @return void
+     */
     protected function configure(): void
     {
         $this->setHelp("Sql query counting the number of every group in a column");
@@ -27,24 +34,31 @@ class SqlCountScript extends AbstractMagpieCommand
         $this->addOption('DESC or ASC', '-asc', InputOption::VALUE_OPTIONAL, 'DESC or ASC?', 'DESC');
     }
 
+    /**
+     * Builds a table from the sql script based off of user inputs
+     *
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     */
     public function execute(InputInterface $input, OutputInterface $output)
     {
         $this->getContext()->getLogger()->pushHandler(new ConsoleHandler($output)); //@todo intialize logger like other commands
 
         $table = $input->getArgument('table');
         $column = $input->getArgument('column');
-        $columnName = $input->getArgument('columnName');
+        $column_name = $input->getArgument('columnName');
 
-        $results = $this->index($table, $column, $columnName);
+        $results = $this->index($table, $column, $column_name);
 
         $rows = [];
         foreach ($results as $result) {
-            $rows[] = array($result->$columnName, $result->Count);
+            $rows[] = array($result->$column_name, $result->Count);
         }
 
         $table_helper = new Table($output);
         $table_helper->setRows($rows);
-        $table_helper->setHeaders([$columnName, 'Count']);
+        $table_helper->setHeaders([$column_name, 'Count']);
         $table_helper->render();
 
         $this->getContext()->getLogger()->info("Done");
@@ -52,10 +66,18 @@ class SqlCountScript extends AbstractMagpieCommand
         return COMMAND::SUCCESS;
     }
 
-    public function index($table, $column, $columnName)
+    /**
+     * Creates a sql script which counts each value in a designated column.
+     *
+     * @param $table
+     * @param $column
+     * @param $column_name
+     * @return mixed
+     */
+    public function index($table, $column, $column_name)
     {
         $sql = "";
-        $sql .= "SELECT COUNT({$column}) AS 'Count', $column AS '$columnName'";
+        $sql .= "SELECT COUNT({$column}) AS 'Count', $column AS '$column_name'";
         $sql .= "FROM {$table} ";
         $sql .= "GROUP BY {$column} ";
         $sql .= "ORDER BY COUNT({$column}) DESC";

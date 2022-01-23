@@ -12,11 +12,19 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 
+/**
+ * Creates teardown command.
+ */
 class TeardownCommand extends AbstractMagpieCommand
 {
     protected static $defaultName = 'data:teardown';
     protected static $defaultDescription = "Reverse all migrations";
 
+    /**
+     * Takes user inputs.
+     *
+     * @return void
+     */
     protected function configure(): void
     {
         $this->setHelp("Destroys all tables for all sources");
@@ -24,6 +32,8 @@ class TeardownCommand extends AbstractMagpieCommand
     }
 
     /**
+     *
+     *
      * @throws ExceptionInterface
      * @throws Exception
      */

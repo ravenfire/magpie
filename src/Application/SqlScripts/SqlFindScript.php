@@ -11,20 +11,34 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-
+/**
+ * Table with results matching a designated value.
+ */
 class SqlFindScript extends AbstractMagpieCommand
 {
     protected static $defaultName = 'sql:find';
-    protected static $defaultDescription = "Sql query counting the number of every group in a column";
+    protected static $defaultDescription = "Sql query finding a specific value in a column";
 
+    /**
+     * Takes uses inputs
+     *
+     * @return void
+     */
     protected function configure(): void
     {
-        $this->setHelp("Sql query counting the number of every group in a column");
+        $this->setHelp("Sql query finding a specific value in a column");
         $this->addArgument('table', InputArgument::REQUIRED, "Table to use");
         $this->addArgument('column', InputArgument::REQUIRED, "Column to use");
         $this->addArgument('value', InputArgument::REQUIRED, "Value to use");
     }
 
+    /**
+     * Builds a table from the sql script based off of user inputs
+     *
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     */
     public function execute(InputInterface $input, OutputInterface $output)
     {
         $this->getContext()->getLogger()->pushHandler(new ConsoleHandler($output));
@@ -35,25 +49,13 @@ class SqlFindScript extends AbstractMagpieCommand
 
         $results = $this->index($table, $column, $value);
 
-        foreach ($results[0] as $result => $data) {
-            $dbColumns[] = $result;
-        }
+        $db_columns = [];
 
-        $rows = [];
-        foreach ($results as $result) {
-            $row = [];
-            foreach ($dbColumns as $dbColumn) {
-                if (strlen($result->$dbColumn) > 12) {
-                    $result->$dbColumn = substr($result->$dbColumn, 0, 12);
-                }
-                $row[] = $result->$dbColumn;
-            }
-            $rows[] = $row;
-        }
+        $rows = $this->setStrLen($results, $db_columns);
 
         $table_helper = new Table($output);
         $table_helper->setRows($rows);
-        $table_helper->setHeaders($dbColumns);
+        $table_helper->setHeaders($db_columns);
         $table_helper->render();
 
         $this->getContext()->getLogger()->info("Done");
@@ -61,6 +63,14 @@ class SqlFindScript extends AbstractMagpieCommand
         return COMMAND::SUCCESS;
     }
 
+    /**
+     * Creates the sql script which finds a designated value.
+     *
+     * @param $table
+     * @param $column
+     * @param $value
+     * @return mixed
+     */
     public function index($table, $column, $value)
     {
         $sql = "";
