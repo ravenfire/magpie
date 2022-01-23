@@ -2,7 +2,7 @@
 
 namespace Ravenfire\Magpie\Application\SqlScripts;
 
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Capsule\Manager as DB;
 use Ravenfire\Magpie\Application\AbstractMagpieCommand;
 use Symfony\Bridge\Monolog\Handler\ConsoleHandler;
 use Symfony\Component\Console\Command\Command;
@@ -23,6 +23,7 @@ class SqlCountScript extends AbstractMagpieCommand
         $this->setHelp("Sql query counting the number of every group in a column");
         $this->addArgument('table', InputArgument::REQUIRED, "Table to use");
         $this->addArgument('column', InputArgument::REQUIRED, "Column to use");
+        $this->addArgument('columnName', InputArgument::REQUIRED, "Name to use for the column");
         $this->addOption('DESC or ASC', '-asc', InputOption::VALUE_OPTIONAL, 'DESC or ASC?', 'DESC');
         $this->addOption('confirm', '-c', InputOption::VALUE_OPTIONAL, 'Confirm?', false);
     }
@@ -33,22 +34,18 @@ class SqlCountScript extends AbstractMagpieCommand
 
         $table = $input->getArgument('table');
         $column = $input->getArgument('column');
+        $columnName = $input->getArgument('columnName');
 
-        $results = $this->index($table, $column);
+        $results = $this->index($table, $column, $columnName);
 
-        dd($results);
-
-//        $sql = "";
-//        $sql .= "SELECT COUNT({$column}), $column ";
-//        $sql .= "FROM {$table} ";
-//        $sql .= "GROUP BY {$column} ";
-//        $sql .= "ORDER BY COUNT({$column}) DESC";
-
-//        $results = DB::select($sql);
+        $rows = [];
+        foreach ($results as $result) {
+            $rows[] = array($result->$columnName, $result->Count);
+        }
 
         $table_helper = new Table($output);
-        $table_helper->setRows($results);
-        $table_helper->setHeaders(['Name', 'Counts']);
+        $table_helper->setRows($rows);
+        $table_helper->setHeaders([$columnName, 'Count']);
         $table_helper->render();
 
         $this->getContext()->getLogger()->info("Done");
@@ -56,17 +53,14 @@ class SqlCountScript extends AbstractMagpieCommand
         return COMMAND::SUCCESS;
     }
 
-    public function index($table, $column)
+    public function index($table, $column, $columnName)
     {
         $sql = "";
-        $sql .= "SELECT COUNT({$column}), $column ";
+        $sql .= "SELECT COUNT({$column}) AS 'Count', $column AS '$columnName'";
         $sql .= "FROM {$table} ";
         $sql .= "GROUP BY {$column} ";
         $sql .= "ORDER BY COUNT({$column}) DESC";
 
-        $results = DB::select($sql);
-//        $users = DB::select('select * from users where active = ?', [1]);
-
-        return $results;
+        return DB::select($sql);
     }
 }

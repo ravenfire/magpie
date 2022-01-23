@@ -2,7 +2,7 @@
 
 namespace Ravenfire\Magpie\Application\SqlScripts;
 
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Capsule\Manager as DB;
 use Ravenfire\Magpie\Application\AbstractMagpieCommand;
 use Symfony\Bridge\Monolog\Handler\ConsoleHandler;
 use Symfony\Component\Console\Command\Command;
@@ -24,6 +24,8 @@ class SqlFindScript extends AbstractMagpieCommand
         $this->addArgument('table', InputArgument::REQUIRED, "Table to use");
         $this->addArgument('column', InputArgument::REQUIRED, "Column to use");
         $this->addArgument('value', InputArgument::REQUIRED, "Value to use");
+        $this->addOption('columnName', '-cn', InputOption::VALUE_OPTIONAL, "Column Name to use", 'Data');
+        $this->addOption('valueName', '-vn', InputOption::VALUE_OPTIONAL, "Column Name to use", 'Value');
         $this->addOption('confirm', '-c', InputOption::VALUE_OPTIONAL, 'Confirm?', false);
     }
 
@@ -34,23 +36,48 @@ class SqlFindScript extends AbstractMagpieCommand
         $table = $input->getArgument('table');
         $column = $input->getArgument('column');
         $value = $input->getArgument('value');
+        $columnName = $input->getOption('columnName');
+        $valueName = $input->getOption('valueName');
 
-        $sql = "";
-        $sql .= "SELECT * ";
-        $sql .= "FROM {$table} ";
-        $sql .= "WHERE {$column} = {$value}";
+        $results = $this->index($table, $column, $value);
 
-        $results = DB::select($sql)->get();
+        foreach ($results[0] as $result => $data) {
+            $dbColumns[] = $result;
+        }
 
-        dd($results);
+        $rows = [];
+        $row = [];
+        foreach ($results as $result) {
+            foreach ($dbColumns as $dbColumn) {
+//                dd($result->$dbColumn);
+                $row[] = $result->$dbColumn;
+            }
+            $rows[] = $row;
+            $row = [];
+        }
 
-        $table_helper = new Table();
-        $table_helper->setRows($results);
-        $table_helper->setHeaders(['Name', 'Counts']);
+        $count = count($dbColumns);
+
+        $table_helper = new Table($output);
+        $table_helper->setRows($rows);
+        $table_helper->setHeaders($dbColumns);
+        for ($i = 0; $i < $count; $i++) {
+            $table_helper->setColumnMaxWidth($i, 12);
+        }
         $table_helper->render();
 
         $this->getContext()->getLogger()->info("Done");
 
         return COMMAND::SUCCESS;
+    }
+
+    public function index($table, $column, $value)
+    {
+        $sql = "";
+        $sql .= "SELECT * ";
+        $sql .= "FROM {$table} ";
+        $sql .= "WHERE {$column} = {$value}";
+
+        return DB::select($sql);
     }
 }

@@ -126,8 +126,7 @@ class BoardGameGeekSource extends AbstractSource
 
         $saveNeeded = false;
         $gameKey = GameModel::gameKey($responseBoardgame['name'], $responseBoardgame['boardgamepublisher'], $responseBoardgame['yearpublished']);
-        $game = SqlQueries::searchForData(GameModel, 'game_key', $gameKey);
-//        $game = GameModel::where('game_key', $gameKey)->get();
+        $game = GameModel::where('game_key', $gameKey)->get();
 
         if (count($game) === 0) {
             $game = new GameModel();
