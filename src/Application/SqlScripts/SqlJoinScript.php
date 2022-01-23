@@ -9,7 +9,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 
@@ -25,7 +24,6 @@ class SqlJoinScript extends AbstractMagpieCommand
         $this->addArgument('tableTwo', InputArgument::REQUIRED, "Second table to use");
         $this->addArgument('tableOneJoinColumn', InputArgument::REQUIRED, "Table one column to join");
         $this->addArgument('tableTwoJoinColumn', InputArgument::REQUIRED, "Table two column to join");
-        $this->addOption('confirm', '-c', InputOption::VALUE_OPTIONAL, 'Confirm?', false);
     }
 
     public function execute(InputInterface $input, OutputInterface $output)
@@ -44,25 +42,20 @@ class SqlJoinScript extends AbstractMagpieCommand
         }
 
         $rows = [];
-        $row = [];
-
         foreach ($results as $result) {
+            $row = [];
             foreach ($dbColumns as $dbColumn) {
-//                dd($result->$dbColumn);
+                if (strlen($result->$dbColumn) > 12) {
+                    $result->$dbColumn = substr($result->$dbColumn, 0, 12);
+                }
                 $row[] = $result->$dbColumn;
             }
             $rows[] = $row;
-            $row = [];
         }
-
-        $count = count($dbColumns);
 
         $table_helper = new Table($output);
         $table_helper->setRows($rows);
         $table_helper->setHeaders($dbColumns);
-        for ($i = 0; $i < $count; $i++) {
-            $table_helper->setColumnMaxWidth($i, 12);
-        }
         $table_helper->render();
 
         $this->getContext()->getLogger()->info("Done");

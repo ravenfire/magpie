@@ -25,7 +25,6 @@ class SqlCountScript extends AbstractMagpieCommand
         $this->addArgument('column', InputArgument::REQUIRED, "Column to use");
         $this->addArgument('columnName', InputArgument::REQUIRED, "Name to use for the column");
         $this->addOption('DESC or ASC', '-asc', InputOption::VALUE_OPTIONAL, 'DESC or ASC?', 'DESC');
-        $this->addOption('confirm', '-c', InputOption::VALUE_OPTIONAL, 'Confirm?', false);
     }
 
     public function execute(InputInterface $input, OutputInterface $output)

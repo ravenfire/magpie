@@ -1,7 +1,7 @@
 # Magpie
 Simple framework to collect and store data from various sources. Named magpie because [Magpies](https://en.wikipedia.org/wiki/Magpie) collect shiny things. Data can be shiny, too 😉
 
-> **NOTE:** Not read for production use. Still in very early stages.
+> **NOTE:** Not ready for production use. Still in very early stages.
 
 ## Desired Features
 - Data agnostic framework. The user defines all sources and data structures.
@@ -29,6 +29,8 @@ Since we are building this for our own purposes (to collect game data), we will 
 - **Log**: When you log in magpie, the log record is stored alongside the source data and the audit and job records. Logging is inteded to tell you about broken data or other process-oriented alerts. You can customize the logging.
 - **Job**: A job is kicked off anytime you run the `run` command. The job is the process of collecting and saving information. Each source record, log, and audit record is associated with a job so you can track what changed on a specific run.
 - **Command**: You can (optionally) create additional commands for each source which will execute your arbitrary code.
+- **SQL Scripts**: Eventually these will be prepared statements, but for now they are boilerplate scripts with the goal
+  to add functionality for the user to add their own scripts as needed.
 
 ## Workflow
 This section is incomplete as we are still developing the architecture. The intention is that the user will:
