@@ -2,7 +2,6 @@
 
 namespace Ravenfire\Magpie\Application;
 
-use Ravenfire\Magpie\Application\SqlScripts\SqlTraits;
 use Ravenfire\Magpie\Magpie;
 use Symfony\Bridge\Monolog\Handler\ConsoleHandler;
 use Symfony\Component\Console\Command\Command;
@@ -12,10 +11,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * Lays foundation for the command files.
  */
-class AbstractMagpieCommand extends Command
+class MagpieCommand extends Command
 {
-    use SqlTraits;
-
     /** @var bool */
     static protected $logger_initialized = false;
 
@@ -71,9 +68,9 @@ class AbstractMagpieCommand extends Command
 
     /**
      * @param Magpie $context
-     * @return AbstractMagpieCommand
+     * @return MagpieCommand
      */
-    public function setContext(Magpie $context): AbstractMagpieCommand
+    public function setContext(Magpie $context): MagpieCommand
     {
         $this->context = $context;
         return $this;

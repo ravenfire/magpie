@@ -5,7 +5,7 @@ namespace Ravenfire\Magpie\Application\SqlScripts;
 /**
  * Traits used by the sql scripts
  */
-trait SqlTraits
+trait CanHandleSql
 {
     /**
      * Limits the width of table columns to 12 characters.
@@ -14,7 +14,7 @@ trait SqlTraits
      * @param $db_columns
      * @return array
      */
-    public function setStrLen($results, $db_columns)
+    public function handleResults($results, &$db_columns)
     {
         foreach ($results[0] as $result => $data) {
             $db_columns[] = $result;
@@ -23,8 +23,10 @@ trait SqlTraits
         foreach ($results as $result) {
             $row = [];
             foreach ($db_columns as $db_column) {
-                if (strlen($result->$db_column) > 12) {
-                    $result->$db_column = substr($result->$db_column, 0, 12);
+                if ($result->$db_column !== null) {
+                    if (strlen($result->$db_column) > 12) {
+                        $result->$db_column = substr($result->$db_column, 0, 12);
+                    }
                 }
                 $row[] = $result->$db_column;
             }

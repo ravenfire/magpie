@@ -3,7 +3,7 @@
 namespace Ravenfire\Magpie\Application\SqlScripts;
 
 use Illuminate\Database\Capsule\Manager as DB;
-use Ravenfire\Magpie\Application\AbstractMagpieCommand;
+use Ravenfire\Magpie\Application\MagpieCommand;
 use Symfony\Bridge\Monolog\Handler\ConsoleHandler;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
@@ -15,8 +15,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  *  Table counting values from a designated column.
  */
-class SqlCountScript extends AbstractMagpieCommand
+class SqlCountScript extends MagpieCommand
 {
+    use CanHandleSql;
+
     protected static $defaultName = 'sql:count';
     protected static $defaultDescription = "Sql query counting the number of every group in a column";
 

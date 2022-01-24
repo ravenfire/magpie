@@ -2,7 +2,7 @@
 
 namespace Ravenfire\Magpie\Application\ManageData;
 
-use Ravenfire\Magpie\Application\AbstractMagpieCommand;
+use Ravenfire\Magpie\Application\MagpieCommand;
 use Ravenfire\Magpie\Data\Migrations\MigrationManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -13,7 +13,7 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 /**
  * Creates Setup command option.
  */
-class SetupCommand extends AbstractMagpieCommand
+class SetupCommand extends MagpieCommand
 {
     protected static $defaultName = 'data:setup';
     protected static $defaultDescription = "Run all migrations";

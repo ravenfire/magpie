@@ -3,7 +3,7 @@
 namespace Ravenfire\Magpie\Application\ManageData;
 
 use Exception;
-use Ravenfire\Magpie\Application\AbstractMagpieCommand;
+use Ravenfire\Magpie\Application\MagpieCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -12,7 +12,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * Creates Install command option.
  */
-class InstallCommand extends AbstractMagpieCommand
+class InstallCommand extends MagpieCommand
 {
     protected static $defaultName = 'install';
     protected static $defaultDescription = "Installs all Sources";

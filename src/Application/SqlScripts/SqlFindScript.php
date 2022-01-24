@@ -3,7 +3,7 @@
 namespace Ravenfire\Magpie\Application\SqlScripts;
 
 use Illuminate\Database\Capsule\Manager as DB;
-use Ravenfire\Magpie\Application\AbstractMagpieCommand;
+use Ravenfire\Magpie\Application\MagpieCommand;
 use Symfony\Bridge\Monolog\Handler\ConsoleHandler;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
@@ -14,8 +14,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * Table with results matching a designated value.
  */
-class SqlFindScript extends AbstractMagpieCommand
+class SqlFindScript extends MagpieCommand
 {
+    use CanHandleSql;
+
     protected static $defaultName = 'sql:find';
     protected static $defaultDescription = "Sql query finding a specific value in a column";
 
@@ -51,7 +53,7 @@ class SqlFindScript extends AbstractMagpieCommand
 
         $db_columns = [];
 
-        $rows = $this->setStrLen($results, $db_columns);
+        $rows = $this->handleResults($results, $db_columns);
 
         $table_helper = new Table($output);
         $table_helper->setRows($rows);

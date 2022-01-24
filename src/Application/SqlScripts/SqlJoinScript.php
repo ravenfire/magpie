@@ -3,7 +3,7 @@
 namespace Ravenfire\Magpie\Application\SqlScripts;
 
 use Illuminate\Database\Capsule\Manager as DB;
-use Ravenfire\Magpie\Application\AbstractMagpieCommand;
+use Ravenfire\Magpie\Application\MagpieCommand;
 use Symfony\Bridge\Monolog\Handler\ConsoleHandler;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
@@ -14,8 +14,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * Joins two tables.
  */
-class SqlJoinScript extends AbstractMagpieCommand
+class SqlJoinScript extends MagpieCommand
 {
+    use CanHandleSql;
+
     protected static $defaultName = 'sql:join';
     protected static $defaultDescription = "Sql query joining two tables";
 
@@ -28,7 +30,7 @@ class SqlJoinScript extends AbstractMagpieCommand
     {
         $this->setHelp("Sql query joining two tables");
         $this->addArgument('table_one', InputArgument::REQUIRED, "First table to use");
-        $this->addArgument('table+two', InputArgument::REQUIRED, "Second table to use");
+        $this->addArgument('table_two', InputArgument::REQUIRED, "Second table to use");
         $this->addArgument('table_one_join_column', InputArgument::REQUIRED, "Table one column to join");
         $this->addArgument('table_two_join_column', InputArgument::REQUIRED, "Table two column to join");
     }
@@ -53,7 +55,7 @@ class SqlJoinScript extends AbstractMagpieCommand
 
         $db_columns = [];
 
-        $rows = $this->setStrLen($results, $db_columns);
+        $rows = $this->handleResults($results, $db_columns);
 
         $table_helper = new Table($output);
         $table_helper->setRows($rows);
