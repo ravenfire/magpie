@@ -75,11 +75,14 @@ class SqlFindScript extends MagpieCommand
      */
     public function index($table, $column, $value)
     {
-        $sql = "";
-        $sql .= "SELECT * ";
-        $sql .= "FROM {$table} ";
-        $sql .= "WHERE {$column} = {$value}";
+        if ($this->checkTableAndColumnExist($table, $column)) {
+            $sql = "";
+            $sql .= "SELECT * ";
+            $sql .= "FROM {$table} ";
+            $sql .= "WHERE {$column} = ?";
 
-        return DB::select($sql);
+            return DB::select($sql, [$value]);
+        }
+        return print_r("Bad data.");
     }
 }

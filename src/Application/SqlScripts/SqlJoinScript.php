@@ -78,11 +78,14 @@ class SqlJoinScript extends MagpieCommand
      */
     public function index($table_one, $table_two, $table_one_join_column, $table_two_join_column)
     {
-        $sql = "";
-        $sql .= "SELECT * ";
-        $sql .= "FROM {$table_one} ";
-        $sql .= "JOIN {$table_two} ON {$table_one_join_column} = {$table_two_join_column} ";
+        if ($this->checkTableAndColumnExist($table_one, $table_one_join_column) and $this->checkTableAndColumnExist($table_two, $table_two_join_column)) {
+            $sql = "";
+            $sql .= "SELECT * ";
+            $sql .= "FROM {$table_one} ";
+            $sql .= "JOIN {$table_two} ON {$table_one}.{$table_one_join_column} = {$table_two}.{$table_two_join_column} ";
 
-        return DB::select($sql);
+            return DB::select($sql);
+        }
+        return print_r("Bad data");
     }
 }

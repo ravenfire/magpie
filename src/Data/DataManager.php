@@ -5,6 +5,9 @@ namespace Ravenfire\Magpie\Data;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Ravenfire\Magpie\Magpie;
 
+/**
+ *
+ */
 class DataManager
 {
     /** @var Magpie */
@@ -13,6 +16,10 @@ class DataManager
     /** @var Capsule */
     protected $capsule;
 
+    /**
+     * @param Magpie $context
+     * @param $should_init
+     */
     public function __construct(Magpie $context, $should_init = true)
     {
         $this->setContext($context);
