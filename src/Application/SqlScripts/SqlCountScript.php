@@ -78,12 +78,15 @@ class SqlCountScript extends MagpieCommand
      */
     public function index($table, $column, $column_name)
     {
-        $sql = "";
-        $sql .= "SELECT COUNT({$column}) AS 'Count', $column AS '$column_name'";
-        $sql .= "FROM {$table} ";
-        $sql .= "GROUP BY {$column} ";
-        $sql .= "ORDER BY COUNT({$column}) DESC";
+        if ($this->checkTableAndColumnExist($table, $column)) {
+            $sql = "";
+            $sql .= "SELECT COUNT({$column}) AS 'Count', $column AS '$column_name'";
+            $sql .= "FROM {$table} ";
+            $sql .= "GROUP BY {$column} ";
+            $sql .= "ORDER BY COUNT({$column}) DESC";
 
-        return DB::select($sql);
+            return DB::select($sql);
+        }
+        return print_r("Bad data");
     }
 }

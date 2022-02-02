@@ -2,6 +2,8 @@
 
 namespace Ravenfire\Magpie\Application\SqlScripts;
 
+use Illuminate\Database\Capsule\Manager as DB;
+
 /**
  * Traits used by the sql scripts
  */
@@ -33,5 +35,20 @@ trait CanHandleSql
             $rows[] = $row;
         }
         return $rows;
+    }
+
+    /**
+     * Verifies table and column info exists
+     *
+     * @param $table
+     * @param $column
+     * @return void
+     */
+    public function checkTableAndColumnExist($table, $column): bool
+    {
+        if (DB::schema()->hasTable($table) and DB::schema()->hasColumn($table, $column)) {
+            return true;
+        }
+        return false;
     }
 }
