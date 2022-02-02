@@ -2,7 +2,7 @@
 
 namespace Ravenfire\Magpie\Application\ManageData;
 
-use Ravenfire\Magpie\Application\AbstractMagpieCommand;
+use Ravenfire\Magpie\Application\MagpieCommand;
 use Ravenfire\Magpie\Data\Migrations\MigrationManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -10,17 +10,33 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 
-class SetupCommand extends AbstractMagpieCommand
+/**
+ * Creates Setup command option.
+ */
+class SetupCommand extends MagpieCommand
 {
     protected static $defaultName = 'data:setup';
     protected static $defaultDescription = "Run all migrations";
 
+    /**
+     * Takes user inputs
+     *
+     * @return void
+     */
     protected function configure(): void
     {
         $this->setHelp("Creates all tables for all sources");
         // Adding arguments here
     }
 
+    /**
+     *
+     *
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     * @throws \Exception
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $migrations = new MigrationManager($this->getContext());

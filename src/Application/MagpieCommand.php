@@ -8,7 +8,10 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class AbstractMagpieCommand extends Command
+/**
+ * Lays foundation for the command files.
+ */
+class MagpieCommand extends Command
 {
     /** @var bool */
     static protected $logger_initialized = false;
@@ -16,12 +19,21 @@ class AbstractMagpieCommand extends Command
     /** @var Magpie */
     protected $context;
 
-    public function __construct(Magpie $context, $name = null) //@todo update context to Magpie.
+    /**
+     * @param Magpie $context
+     * @param $name
+     */
+    public function __construct(Magpie $context, $name = null)
     {
         $this->setContext($context);
         parent::__construct($name);
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return void
+     */
     public function initialize(InputInterface $input, OutputInterface $output)
     {
         if (!static::isLoggerInitialized()) {
@@ -56,9 +68,9 @@ class AbstractMagpieCommand extends Command
 
     /**
      * @param Magpie $context
-     * @return AbstractMagpieCommand
+     * @return MagpieCommand
      */
-    public function setContext(Magpie $context): AbstractMagpieCommand
+    public function setContext(Magpie $context): MagpieCommand
     {
         $this->context = $context;
         return $this;

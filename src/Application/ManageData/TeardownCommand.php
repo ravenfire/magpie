@@ -3,7 +3,7 @@
 namespace Ravenfire\Magpie\Application\ManageData;
 
 use Exception;
-use Ravenfire\Magpie\Application\AbstractMagpieCommand;
+use Ravenfire\Magpie\Application\MagpieCommand;
 use Ravenfire\Magpie\Data\Migrations\MigrationManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\ExceptionInterface;
@@ -12,11 +12,19 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 
-class TeardownCommand extends AbstractMagpieCommand
+/**
+ * Creates teardown command.
+ */
+class TeardownCommand extends MagpieCommand
 {
     protected static $defaultName = 'data:teardown';
     protected static $defaultDescription = "Reverse all migrations";
 
+    /**
+     * Takes user inputs.
+     *
+     * @return void
+     */
     protected function configure(): void
     {
         $this->setHelp("Destroys all tables for all sources");
@@ -24,6 +32,8 @@ class TeardownCommand extends AbstractMagpieCommand
     }
 
     /**
+     *
+     *
      * @throws ExceptionInterface
      * @throws Exception
      */

@@ -8,7 +8,10 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class RunAllCommand extends AbstractMagpieCommand
+/**
+ * Creates run all command.
+ */
+class RunAllCommand extends MagpieCommand
 {
     protected static $defaultName = 'run:all';
     protected static $defaultDescription = "Runs a new job with all sources";

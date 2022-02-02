@@ -3,17 +3,25 @@
 namespace Ravenfire\Magpie\Application\ManageData;
 
 use Exception;
-use Ravenfire\Magpie\Application\AbstractMagpieCommand;
+use Ravenfire\Magpie\Application\MagpieCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class InstallCommand extends AbstractMagpieCommand
+/**
+ * Creates Install command option.
+ */
+class InstallCommand extends MagpieCommand
 {
     protected static $defaultName = 'install';
     protected static $defaultDescription = "Installs all Sources";
 
+    /**
+     * Takes user inputs.
+     *
+     * @return void
+     */
     protected function configure(): void
     {
         $this->setHelp("Installs Sources");
@@ -23,6 +31,8 @@ class InstallCommand extends AbstractMagpieCommand
     }
 
     /**
+     *
+     *
      * @throws Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): int

@@ -2,8 +2,8 @@
 
 use Monolog\Logger;
 use Ravenfire\Magpie\Config;
-use Ravenfire\Magpie\Examples\DataSource\DataSource; //Micahel - was DataExample
-use Ravenfire\Magpie\Examples\PrimaryEntity\PrimaryEntity; //Michael - was ExamplePrimaryEntity
+use Ravenfire\Magpie\Examples\DataSource\DataSource;
+use Ravenfire\Magpie\Examples\PrimaryEntity\PrimaryEntity;
 use Ravenfire\Magpie\Examples\SimpleSource\SimpleExample;
 use Ravenfire\Magpie\Logging\MagpieDataLogger;
 use Ravenfire\Magpie\Magpie;
@@ -23,7 +23,7 @@ $logger->pushHandler(new MagpieDataLogger());
 
 $magpie = new Magpie($config);
 $magpie->setLogger($logger); // @todo: make optional
-$magpie->setPrimaryEntity(PrimaryEntity::class); //Michael was ExamplePrimaryEntity
+$magpie->setPrimaryEntity(PrimaryEntity::class);
 
 try {
     $magpie->addSource(SimpleExample::class);

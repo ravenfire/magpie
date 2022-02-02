@@ -1,7 +1,7 @@
 # Magpie
 Simple framework to collect and store data from various sources. Named magpie because [Magpies](https://en.wikipedia.org/wiki/Magpie) collect shiny things. Data can be shiny, too 😉
 
-> **NOTE:** Not read for production use. Still in very early stages.
+> **NOTE:** Not ready for production use. Still in very early stages.
 
 ## Desired Features
 - Data agnostic framework. The user defines all sources and data structures.
@@ -29,25 +29,38 @@ Since we are building this for our own purposes (to collect game data), we will 
 - **Log**: When you log in magpie, the log record is stored alongside the source data and the audit and job records. Logging is inteded to tell you about broken data or other process-oriented alerts. You can customize the logging.
 - **Job**: A job is kicked off anytime you run the `run` command. The job is the process of collecting and saving information. Each source record, log, and audit record is associated with a job so you can track what changed on a specific run.
 - **Command**: You can (optionally) create additional commands for each source which will execute your arbitrary code.
+- **SQL Scripts**: Eventually these will be prepared statements, but for now they are boilerplate scripts with the goal
+  to add functionality for the user to add their own scripts as needed.
 
 ## Workflow
+
 This section is incomplete as we are still developing the architecture. The intention is that the user will:
 
 1. Create a class that extends `AbstractPrimaryEntity` and implement its methods
-2. Create a class for each source (preferable in its own namespace) for each source that must extend `AbstractSource`. Implement the methods. Notable, the `execute()` method is what does the bulk of the work.
+2. Create a class for each source (preferable in its own namespace) for each source that must extend `AbstractSource`.
+   Implement the methods. Notable, the `execute()` method is what does the bulk of the work.
 3. Create a migration that extends the `AbstractMigration` class and define your source and Primary Entity tables.
 4. Create a model for each table that extends the Eloquent `Model`
 5. Create a main entry file, configure the `Magpie` instance and register the primary entity and sources.
 
-## Current State
-Ravenfire is creating this as a mono repository for now, developing the sources and entities we are interested in. It is in an incomplete state as we build features out as we need them.
+## Technical Stuff
 
-Before v1.0 we will extract our sources and entities and replace them with very simple examples. We will then open source Magpie as a framework. We may continue to open source our sources as well.
+1. The following casing is used throughout Magpie to improve readability. (To be completed)
+  - *PascalCase* - Classes & Traits
+  - *camelCase* - Functions & Methods
+  - *snake_case* - Variable & properties
+
+## Current State
+
+Ravenfire is creating this as a mono repository for now, developing the sources and entities we are interested in. It is
+in an incomplete state as we build features out as we need them.
+
+Before v1.0 we will extract our sources and entities and replace them with very simple examples. We will then open
+source Magpie as a framework. We may continue to open source our sources as well.
 
 ## License
+
 MIT. See Liscence File
-
-
 
 ## Contributors
 

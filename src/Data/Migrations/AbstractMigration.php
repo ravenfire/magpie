@@ -5,6 +5,9 @@ namespace Ravenfire\Magpie\Data\Migrations;
 use Illuminate\Database\Capsule\Manager;
 use Illuminate\Database\Migrations\Migration;
 
+/**
+ *
+ */
 abstract class AbstractMigration extends Migration
 {
     /**

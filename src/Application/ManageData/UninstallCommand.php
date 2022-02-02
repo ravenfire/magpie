@@ -3,7 +3,7 @@
 namespace Ravenfire\Magpie\Application\ManageData;
 
 use Exception;
-use Ravenfire\Magpie\Application\AbstractMagpieCommand;
+use Ravenfire\Magpie\Application\MagpieCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -11,11 +11,19 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 
-class UninstallCommand extends AbstractMagpieCommand
+/**
+ * Creates uninstall command.
+ */
+class UninstallCommand extends MagpieCommand
 {
     protected static $defaultName = 'uninstall';
     protected static $defaultDescription = "Uninstalls all Sources";
 
+    /**
+     * Takes user inputs
+     *
+     * @return void
+     */
     protected function configure(): void
     {
         $this->setHelp("Uninstalls All Sources");
@@ -26,6 +34,8 @@ class UninstallCommand extends AbstractMagpieCommand
     }
 
     /**
+     *
+     *
      * @throws Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
