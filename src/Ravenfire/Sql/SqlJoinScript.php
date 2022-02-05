@@ -1,12 +1,12 @@
 <?php
 
-namespace Ravenfire\Magpie\Application\SqlScripts;
+namespace Ravenfire\Magpie\Ravenfire\Sql;
 
 use Illuminate\Database\Capsule\Manager as DB;
 use Ravenfire\Magpie\Application\MagpieCommand;
+use Ravenfire\Magpie\Application\SqlScripts\CanHandleSql;
 use Symfony\Bridge\Monolog\Handler\ConsoleHandler;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -29,10 +29,10 @@ class SqlJoinScript extends MagpieCommand
     protected function configure(): void
     {
         $this->setHelp("Sql query joining two tables");
-        $this->addArgument('table_one', InputArgument::REQUIRED, "First table to use");
-        $this->addArgument('table_two', InputArgument::REQUIRED, "Second table to use");
-        $this->addArgument('table_one_join_column', InputArgument::REQUIRED, "Table one column to join");
-        $this->addArgument('table_two_join_column', InputArgument::REQUIRED, "Table two column to join");
+        $this->addArgument('table_one', InputArgument::REQUIRED, 'Add table_one');
+        $this->addArgument('table_two', InputArgument::REQUIRED, 'Add table_two');
+        $this->addArgument('table_one_join_column', InputArgument::REQUIRED, 'Add column one');
+        $this->addArgument('table_two_join_column', InputArgument::REQUIRED, 'Add column two');
     }
 
     /**
@@ -55,12 +55,9 @@ class SqlJoinScript extends MagpieCommand
 
         $db_columns = [];
 
-        $rows = $this->handleResults($results, $db_columns);
+        $rows = $this->useAllColumnsHandler($results, $db_columns, 12);
 
-        $table_helper = new Table($output);
-        $table_helper->setRows($rows);
-        $table_helper->setHeaders($db_columns);
-        $table_helper->render();
+        $this->createTable($output, $rows, $db_columns);
 
         $this->getContext()->getLogger()->info("Done");
 

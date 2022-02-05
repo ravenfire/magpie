@@ -1,12 +1,12 @@
 <?php
 
-namespace Ravenfire\Magpie\Application\SqlScripts;
+namespace Ravenfire\Magpie\Ravenfire\Sql;
 
 use Illuminate\Database\Capsule\Manager as DB;
 use Ravenfire\Magpie\Application\MagpieCommand;
+use Ravenfire\Magpie\Application\SqlScripts\CanHandleSql;
 use Symfony\Bridge\Monolog\Handler\ConsoleHandler;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -23,17 +23,17 @@ class SqlCountScript extends MagpieCommand
     protected static $defaultDescription = "Sql query counting the number of every group in a column";
 
     /**
-     * Takes uses inputs
+     * Takes users inputs
      *
      * @return void
      */
     protected function configure(): void
     {
         $this->setHelp("Sql query counting the number of every group in a column");
-        $this->addArgument('table', InputArgument::REQUIRED, "Table to use");
-        $this->addArgument('column', InputArgument::REQUIRED, "Column to use");
-        $this->addArgument('columnName', InputArgument::REQUIRED, "Name to use for the column");
-        $this->addOption('DESC or ASC', '-asc', InputOption::VALUE_OPTIONAL, 'DESC or ASC?', 'DESC');
+        $this->addArgument('table', InputArgument::REQUIRED, "Add table");
+        $this->addArgument('column', InputArgument::REQUIRED, 'Add column');
+        $this->addOption('columnName', '-c', InputOption::VALUE_OPTIONAL, 'Add columnName');
+        $this->addOption('priority', '-p', InputOption::VALUE_OPTIONAL, 'Add ASC/DESC', 'DESC');
     }
 
     /**
@@ -49,19 +49,18 @@ class SqlCountScript extends MagpieCommand
 
         $table = $input->getArgument('table');
         $column = $input->getArgument('column');
-        $column_name = $input->getArgument('columnName');
+        $column_name = $input->getOption('columnName');
+        if ($column_name === null) $column_name = $column;
+        $priority = $input->getOption('priority');
 
-        $results = $this->index($table, $column, $column_name);
+        $results = $this->index($table, $column, $column_name, $priority);
 
         $rows = [];
         foreach ($results as $result) {
             $rows[] = array($result->$column_name, $result->Count);
         }
 
-        $table_helper = new Table($output);
-        $table_helper->setRows($rows);
-        $table_helper->setHeaders([$column_name, 'Count']);
-        $table_helper->render();
+        $this->createTable($output, $rows, [$column_name, 'Count']);
 
         $this->getContext()->getLogger()->info("Done");
 
@@ -76,14 +75,17 @@ class SqlCountScript extends MagpieCommand
      * @param $column_name
      * @return mixed
      */
-    public function index($table, $column, $column_name)
+    public function index($table, $column, $column_name = null, $priority = null)
     {
         if ($this->checkTableAndColumnExist($table, $column)) {
             $sql = "";
-            $sql .= "SELECT COUNT({$column}) AS 'Count', $column AS '$column_name'";
+            $sql .= "SELECT ";
+            $column_name !== null ? $sql .= "{$column} AS '{$column_name}', " : $sql .= "{$column}, ";
+            $sql .= "COUNT({$column}) AS 'Count'";
             $sql .= "FROM {$table} ";
             $sql .= "GROUP BY {$column} ";
-            $sql .= "ORDER BY COUNT({$column}) DESC";
+            $sql .= "ORDER BY COUNT({$column})";
+            $priority !== null ? $sql .= " $priority;" : $sql .= ";";
 
             return DB::select($sql);
         }

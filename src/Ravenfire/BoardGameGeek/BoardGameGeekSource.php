@@ -4,6 +4,9 @@ namespace Ravenfire\Magpie\Ravenfire\BoardGameGeek;
 
 use GuzzleHttp\Client;
 use Illuminate\Support\Arr;
+use Ravenfire\Magpie\Application\SqlScripts\SqlCountScript;
+use Ravenfire\Magpie\Application\SqlScripts\SqlFindScript;
+use Ravenfire\Magpie\Application\SqlScripts\SqlJoinScript;
 use Ravenfire\Magpie\Ravenfire\Game\GameModel;
 use Ravenfire\Magpie\Sources\AbstractSource;
 
@@ -12,6 +15,15 @@ use Ravenfire\Magpie\Sources\AbstractSource;
  */
 class BoardGameGeekSource extends AbstractSource
 {
+//    public static function getNewCommands(): array
+//    {
+//        return [
+//            SqlCountScript::class,
+//            SqlJoinScript::class,
+//            SqlFindScript::class
+//        ];
+//    }
+
     /**
      * Main function of the class. Sets search parameters, makes calls to Board Game Geek API and persists appropriate
      *  values to designated tables.

@@ -2,6 +2,9 @@
 
 namespace Ravenfire\Magpie\Ravenfire\Game;
 
+use Ravenfire\Magpie\Ravenfire\Sql\SqlCountScript;
+use Ravenfire\Magpie\Ravenfire\Sql\SqlFindScript;
+use Ravenfire\Magpie\Ravenfire\Sql\SqlJoinScript;
 use Ravenfire\Magpie\Sources\AbstractPrimaryEntity;
 
 /**
@@ -9,6 +12,15 @@ use Ravenfire\Magpie\Sources\AbstractPrimaryEntity;
  */
 class GamesPrimaryEntity extends AbstractPrimaryEntity
 {
+    public static function getNewCommands(): array
+    {
+        return [
+            SqlCountScript::class,
+            SqlJoinScript::class,
+            SqlFindScript::class
+        ];
+    }
+
     /**
      * @inheritDoc
      */

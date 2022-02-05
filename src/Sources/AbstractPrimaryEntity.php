@@ -34,6 +34,14 @@ abstract class AbstractPrimaryEntity
     abstract public static function getMigrations(): array;
 
     /**
+     * @return array
+     */
+    public static function getNewCommands(): array
+    {
+        return [];
+    }
+
+    /**
      * @return Magpie
      */
     public function getContext(): Magpie
