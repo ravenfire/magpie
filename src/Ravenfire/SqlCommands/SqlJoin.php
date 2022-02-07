@@ -1,6 +1,6 @@
 <?php
 
-namespace Ravenfire\Magpie\Ravenfire\Sql;
+namespace Ravenfire\Magpie\Ravenfire\SqlCommands;
 
 use Illuminate\Database\Capsule\Manager as DB;
 use Ravenfire\Magpie\Application\MagpieCommand;
@@ -14,7 +14,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * Joins two tables.
  */
-class SqlJoinScript extends MagpieCommand
+class SqlJoin extends MagpieCommand
 {
     use CanHandleSql;
 
@@ -55,7 +55,7 @@ class SqlJoinScript extends MagpieCommand
 
         $db_columns = [];
 
-        $rows = $this->useAllColumnsHandler($results, $db_columns, 12);
+        $rows = $this->useAllColumnsHandler($results, $db_columns);
 
         $this->createTable($output, $rows, $db_columns);
 

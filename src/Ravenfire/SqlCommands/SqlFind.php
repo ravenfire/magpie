@@ -1,6 +1,6 @@
 <?php
 
-namespace Ravenfire\Magpie\Ravenfire\Sql;
+namespace Ravenfire\Magpie\Ravenfire\SqlCommands;
 
 use Illuminate\Database\Capsule\Manager as DB;
 use Ravenfire\Magpie\Application\MagpieCommand;
@@ -15,7 +15,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * Table with results matching a designated value.
  */
-class SqlFindScript extends MagpieCommand
+class SqlFind extends MagpieCommand
 {
     use CanHandleSql;
 
@@ -77,7 +77,10 @@ class SqlFindScript extends MagpieCommand
      */
     public function index($table, $column, $value, $operator)
     {
-        if ($this->checkTableAndColumnExist($table, $column)) {
+        $operatorChoices = ["<", ">", "=", "<>", ">=", "<="];
+        $validOperator = in_array($operator, $operatorChoices);
+
+        if ($this->checkTableAndColumnExist($table, $column) and $validOperator) {
             $sql = "";
             $sql .= "SELECT * ";
             $sql .= "FROM {$table} ";

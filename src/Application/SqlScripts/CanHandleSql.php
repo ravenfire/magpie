@@ -27,13 +27,13 @@ trait CanHandleSql
     }
 
     /**
-     * Limits the width of table columns to given length.
+     * Limits the width of all table columns to given length.
      *
      * @param $results
      * @param $db_columns
      * @return array
      */
-    public function useAllColumnsHandler($results, &$db_columns, int $columnLength)
+    public function useAllColumnsHandler($results, &$db_columns, int $columnLength = 12)
     {
         foreach ($results[0] as $result => $data) {
             $db_columns[] = $result;

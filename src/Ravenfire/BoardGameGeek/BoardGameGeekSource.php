@@ -15,15 +15,6 @@ use Ravenfire\Magpie\Sources\AbstractSource;
  */
 class BoardGameGeekSource extends AbstractSource
 {
-//    public static function getNewCommands(): array
-//    {
-//        return [
-//            SqlCountScript::class,
-//            SqlJoinScript::class,
-//            SqlFindScript::class
-//        ];
-//    }
-
     /**
      * Main function of the class. Sets search parameters, makes calls to Board Game Geek API and persists appropriate
      *  values to designated tables.

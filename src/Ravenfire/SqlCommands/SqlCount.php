@@ -1,6 +1,6 @@
 <?php
 
-namespace Ravenfire\Magpie\Ravenfire\Sql;
+namespace Ravenfire\Magpie\Ravenfire\SqlCommands;
 
 use Illuminate\Database\Capsule\Manager as DB;
 use Ravenfire\Magpie\Application\MagpieCommand;
@@ -15,7 +15,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  *  Table counting values from a designated column.
  */
-class SqlCountScript extends MagpieCommand
+class SqlCount extends MagpieCommand
 {
     use CanHandleSql;
 
@@ -50,7 +50,9 @@ class SqlCountScript extends MagpieCommand
         $table = $input->getArgument('table');
         $column = $input->getArgument('column');
         $column_name = $input->getOption('columnName');
-        if ($column_name === null) $column_name = $column;
+        if ($column_name === null) {
+            $column_name = $column;
+        }
         $priority = $input->getOption('priority');
 
         $results = $this->index($table, $column, $column_name, $priority);
@@ -80,6 +82,7 @@ class SqlCountScript extends MagpieCommand
         if ($this->checkTableAndColumnExist($table, $column)) {
             $sql = "";
             $sql .= "SELECT ";
+            //$column_name is optional. $column is required.
             $column_name !== null ? $sql .= "{$column} AS '{$column_name}', " : $sql .= "{$column}, ";
             $sql .= "COUNT({$column}) AS 'Count'";
             $sql .= "FROM {$table} ";
