@@ -1,20 +1,21 @@
 <?php
 
-namespace Ravenfire\Magpie\Application\SqlScripts;
+namespace Ravenfire\Magpie\Ravenfire\SqlCommands;
 
 use Illuminate\Database\Capsule\Manager as DB;
 use Ravenfire\Magpie\Application\MagpieCommand;
+use Ravenfire\Magpie\Application\SqlScripts\CanHandleSql;
 use Symfony\Bridge\Monolog\Handler\ConsoleHandler;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Table with results matching a designated value.
  */
-class SqlFindScript extends MagpieCommand
+class SqlFind extends MagpieCommand
 {
     use CanHandleSql;
 
@@ -28,10 +29,12 @@ class SqlFindScript extends MagpieCommand
      */
     protected function configure(): void
     {
-        $this->setHelp("Sql query finding a specific value in a column");
-        $this->addArgument('table', InputArgument::REQUIRED, "Table to use");
-        $this->addArgument('column', InputArgument::REQUIRED, "Column to use");
-        $this->addArgument('value', InputArgument::REQUIRED, "Value to use");
+        $this->setHelp("Sql query finding specific data in a column");
+        $this->addArgument('table', InputArgument::REQUIRED, "Add table");
+        $this->addArgument('column', InputArgument::REQUIRED, 'Add column');
+        $this->addArgument('data', InputArgument::REQUIRED, 'Add data');
+        $this->addOption('operator', '-o', InputOption::VALUE_OPTIONAL, 'Add operator', '=');
+        $this->addOption('column_length', '-l', InputOption::VALUE_OPTIONAL, 'Define column length', 12);
     }
 
     /**
@@ -47,18 +50,17 @@ class SqlFindScript extends MagpieCommand
 
         $table = $input->getArgument('table');
         $column = $input->getArgument('column');
-        $value = $input->getArgument('value');
+        $data = $input->getArgument('data');
+        $operator = $input->getOption('operator');
+        $length = $input->getOption('column_length');
 
-        $results = $this->index($table, $column, $value);
+        $results = $this->index($table, $column, $data, $operator);
 
         $db_columns = [];
 
-        $rows = $this->handleResults($results, $db_columns);
+        $rows = $this->useAllColumnsHandler($results, $db_columns, $length);
 
-        $table_helper = new Table($output);
-        $table_helper->setRows($rows);
-        $table_helper->setHeaders($db_columns);
-        $table_helper->render();
+        $this->createTable($output, $rows, $db_columns);
 
         $this->getContext()->getLogger()->info("Done");
 
@@ -73,13 +75,16 @@ class SqlFindScript extends MagpieCommand
      * @param $value
      * @return mixed
      */
-    public function index($table, $column, $value)
+    public function index($table, $column, $value, $operator)
     {
-        if ($this->checkTableAndColumnExist($table, $column)) {
+        $operatorChoices = ["<", ">", "=", "<>", ">=", "<="];
+        $validOperator = in_array($operator, $operatorChoices);
+
+        if ($this->checkTableAndColumnExist($table, $column) and $validOperator) {
             $sql = "";
             $sql .= "SELECT * ";
             $sql .= "FROM {$table} ";
-            $sql .= "WHERE {$column} = ?";
+            $sql .= "WHERE {$column} {$operator} ?";
 
             return DB::select($sql, [$value]);
         }

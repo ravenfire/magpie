@@ -66,6 +66,14 @@ abstract class AbstractSource implements LoggerInterface
     }
 
     /**
+     * @return array
+     */
+    public static function getNewCommands(): array
+    {
+        return [];
+    }
+
+    /**
      *
      */
     public function __construct(Magpie $context)

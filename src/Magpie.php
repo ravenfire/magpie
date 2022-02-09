@@ -11,9 +11,6 @@ use Ravenfire\Magpie\Application\ManageData\SetupCommand;
 use Ravenfire\Magpie\Application\ManageData\TeardownCommand;
 use Ravenfire\Magpie\Application\ManageData\UninstallCommand;
 use Ravenfire\Magpie\Application\RunAllCommand;
-use Ravenfire\Magpie\Application\SqlScripts\SqlCountScript;
-use Ravenfire\Magpie\Application\SqlScripts\SqlFindScript;
-use Ravenfire\Magpie\Application\SqlScripts\SqlJoinScript;
 use Ravenfire\Magpie\Data\DataManager;
 use Ravenfire\Magpie\Sources\AbstractPrimaryEntity;
 use Ravenfire\Magpie\Sources\AbstractSource;
@@ -91,10 +88,22 @@ class Magpie
         $application->add(new TeardownCommand($this));
         $application->add(new InstallCommand($this));
         $application->add(new UninstallCommand($this));
-        $application->add(new SqlCountScript($this));
-        $application->add(new SqlJoinScript($this));
-        $application->add(new SqlFindScript($this));
 
+        foreach ($this->getAllSources() as $source_class => $source) {
+            /** @var AbstractSource $source_class */
+            foreach ($source_class::getNewCommands() as $command_class) {
+                if (class_exists($command_class)) {
+                    $application->add(new $command_class($this));
+                }
+            }
+        }
+
+        /** @var AbstractPrimaryEntity $primary_entity_class */
+        foreach ($this->getPrimaryEntity()::getNewCommands() as $command_class) {
+            if (class_exists($command_class)) {
+                $application->add(new $command_class($this));
+            }
+        }
 
         // @Todo: I can't do any logging to the terminal until the console runs the application.
         $application->run();

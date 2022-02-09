@@ -4,6 +4,9 @@ namespace Ravenfire\Magpie\Ravenfire\BoardGameGeek;
 
 use GuzzleHttp\Client;
 use Illuminate\Support\Arr;
+use Ravenfire\Magpie\Application\SqlScripts\SqlCountScript;
+use Ravenfire\Magpie\Application\SqlScripts\SqlFindScript;
+use Ravenfire\Magpie\Application\SqlScripts\SqlJoinScript;
 use Ravenfire\Magpie\Ravenfire\Game\GameModel;
 use Ravenfire\Magpie\Sources\AbstractSource;
 
